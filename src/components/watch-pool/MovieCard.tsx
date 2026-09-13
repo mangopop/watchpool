@@ -1,0 +1,238 @@
+"use client";
+
+import { useState } from "react";
+import { REACTIONS, TIER_ICON } from "@/lib/watch-pool/constants";
+import {
+  daysAgoLabel,
+  friendName,
+  initials,
+  myReaction,
+  notePrompt,
+  posterGradient,
+  retireState,
+  runtimeLabel,
+  serviceName,
+  tallyFor,
+} from "@/lib/watch-pool/logic";
+import type { Movie, PoolState, ReactionStatus, ReactionTier } from "@/lib/watch-pool/types";
+
+interface MovieCardProps {
+  state: PoolState;
+  movie: Movie;
+  onSetStatus: (movieId: string, status: ReactionStatus) => void;
+  onSetRating: (movieId: string, rating: ReactionTier) => void;
+  onSetNote: (movieId: string, note: string) => void;
+  onDismissNote: (movieId: string) => void;
+  onPlea: (movieId: string, plea: string) => void;
+  onBump: (movieId: string) => void;
+}
+
+export function MovieCard({
+  state,
+  movie,
+  onSetStatus,
+  onSetRating,
+  onSetNote,
+  onDismissNote,
+  onPlea,
+  onBump,
+}: MovieCardProps) {
+  const [pleaText, setPleaText] = useState("");
+  const t = tallyFor(movie);
+  const mine = myReaction(movie, state.currentFriend);
+  const ret = retireState(movie);
+  const divisive = t.loved + t.liked > 0 && t.miss > 0;
+
+  const split: { cls: string; tier: ReactionTier }[] = (
+    ["loved", "liked", "meh", "miss"] as ReactionTier[]
+  )
+    .filter((tier) => t.names[tier].length > 0)
+    .map((tier) => ({
+      cls: tier === "loved" ? "adored" : tier === "liked" ? "loved" : tier === "meh" ? "mixed" : "panned",
+      tier,
+    }));
+
+  const prompt = notePrompt(state, movie, t, mine);
+
+  const byline =
+    movie.recommendedBy === state.currentFriend ? (
+      <>
+        <span className="yours">Your pick</span> · {daysAgoLabel(movie.dateAdded)}
+      </>
+    ) : (
+      <>
+        <b>{friendName(movie.recommendedBy)}</b>&rsquo;s pick · {daysAgoLabel(movie.dateAdded)}
+      </>
+    );
+
+  const pitchedBy = movie.recommendedBy === state.currentFriend ? (
+    <b className="yours">You</b>
+  ) : (
+    <b>{friendName(movie.recommendedBy)}</b>
+  );
+
+  let revive: React.ReactNode = null;
+  if (ret && ret.bucket === "ignored") {
+    revive =
+      movie.recommendedBy === state.currentFriend ? (
+        <div className="defend-row">
+          <input
+            type="text"
+            maxLength={140}
+            placeholder="Make your plea and bump it back…"
+            value={pleaText}
+            onChange={(e) => setPleaText(e.target.value)}
+          />
+          <button
+            type="button"
+            className="mini-btn"
+            onClick={() => {
+              if (!pleaText.trim()) return;
+              onPlea(movie.id, pleaText.trim());
+              setPleaText("");
+            }}
+          >
+            Bump
+          </button>
+        </div>
+      ) : (
+        <button type="button" className="mini-btn" onClick={() => onBump(movie.id)}>
+          Bump it back
+        </button>
+      );
+  } else if (ret) {
+    revive = <div className="ruled-out">Retired for good — the group has spoken</div>;
+  }
+
+  return (
+    <article className={`card${ret ? " ghosted" : ""}`}>
+      <div className="card-top">
+        <span className="poster" style={{ background: posterGradient(movie.title) }}>
+          <i />
+          <b>{initials(movie.title)}</b>
+        </span>
+        <div>
+          <h3>{movie.title}</h3>
+          <div className="by">{byline}</div>
+        </div>
+      </div>
+
+      {(divisive || ret || movie.providers.length > 0) && (
+        <div className="flags">
+          {divisive && <span className="flag divisive">Most divisive</span>}
+          {ret && (
+            <span className="flag archived">
+              {ret.bucket === "panned" ? "Panned" : "Ignored"} · {ret.why}
+            </span>
+          )}
+          {movie.providers.length > 0 && (
+            <span className="flag where">
+              {serviceName(movie.providers[0])} · {runtimeLabel(movie.runtime)}
+            </span>
+          )}
+        </div>
+      )}
+
+      <p className="pitch">
+        {movie.pitch}
+        <cite>— {pitchedBy}</cite>
+      </p>
+
+      {movie.plea && (
+        <p className="defence">
+          <span>{friendName(movie.recommendedBy)} pleads the case</span>
+          {movie.plea}
+        </p>
+      )}
+      {movie.bumpedBy && <div className="ruled-out">Bumped back by {friendName(movie.bumpedBy)}</div>}
+
+      <div className="tally">
+        <span>
+          <b>{t.watched}</b>/{t.total} watched
+        </span>
+        <span>
+          <b>{t.want}</b> queued
+        </span>
+        {split.length > 0 && (
+          <span className="split">
+            {split.map(({ cls, tier }) => (
+              <span className={cls} key={tier}>
+                {TIER_ICON[tier]} {t.names[tier].join(", ")}
+              </span>
+            ))}
+          </span>
+        )}
+      </div>
+
+      {t.notes.length > 0 && (
+        <div className="notes">
+          {t.notes.slice(0, 2).map((n, i) => (
+            <div key={i}>
+              <b>{n.who}</b> &ldquo;{n.note}&rdquo;
+            </div>
+          ))}
+        </div>
+      )}
+
+      {ret ? (
+        revive
+      ) : (
+        <>
+          <div className="seg" role="group" aria-label={`Your status for ${movie.title}`}>
+            {(["want", "watched", "skip"] as ReactionStatus[]).map((s) => (
+              <button
+                key={s}
+                type="button"
+                data-state={s}
+                aria-pressed={mine.status === s}
+                onClick={() => onSetStatus(movie.id, s)}
+              >
+                {s === "want" ? "Want" : s === "watched" ? "Watched" : "Pass"}
+              </button>
+            ))}
+          </div>
+
+          {mine.status === "watched" && (
+            <div className="react-row">
+              <span>Your take</span>
+              {REACTIONS.map((r) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  className="react-btn"
+                  aria-pressed={mine.rating === r.id}
+                  title={r.label}
+                  aria-label={r.label}
+                  onClick={() => onSetRating(movie.id, r.id)}
+                >
+                  {r.icon}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {prompt && (
+            <div className="ask">
+              <span className="q">{prompt.question}</span>
+              <div className="row">
+                {prompt.chips.map((chip) => (
+                  <button
+                    key={chip}
+                    type="button"
+                    className="note-chip"
+                    onClick={() => onSetNote(movie.id, chip)}
+                  >
+                    {chip}
+                  </button>
+                ))}
+              </div>
+              <button type="button" className="skip-ask" onClick={() => onDismissNote(movie.id)}>
+                No comment
+              </button>
+            </div>
+          )}
+        </>
+      )}
+    </article>
+  );
+}
