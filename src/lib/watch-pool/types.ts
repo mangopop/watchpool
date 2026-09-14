@@ -43,6 +43,7 @@ export interface Movie {
   // TMDB's own user rating (0-10), not IMDb's — see tmdb.ts.
   tmdbRating: number | null;
   genres: string[];
+  trailerKey: string | null;
 }
 
 export interface Tonight {

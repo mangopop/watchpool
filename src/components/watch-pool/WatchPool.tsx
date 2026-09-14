@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import type { TmdbMediaType } from "@/lib/tmdb-shared";
 import {
   addMovieAction,
+  backfillTrailersAction,
   deleteMovieAction,
   setMyServiceAction,
   setReactionAction,
@@ -95,6 +96,26 @@ export function WatchPool({
       return next;
     });
   }
+
+  // Movies added before trailer/genre fetching existed are missing those
+  // fields — catch them up in the background, a few at a time, per load.
+  // Self-limiting: once every movie has both, the action finds nothing
+  // stale and this becomes a no-op query, so it's safe to leave running
+  // rather than pulling it out once the backlog clears.
+  useEffect(() => {
+    backfillTrailersAction(groupId)
+      .then((results) => {
+        if (results.length === 0) return;
+        setMovies((s) =>
+          s.map((m) => {
+            const hit = results.find((r) => r.id === m.id);
+            if (!hit) return m;
+            return { ...m, trailerKey: hit.trailerKey, genres: hit.genres ?? m.genres };
+          }),
+        );
+      })
+      .catch(() => {});
+  }, [groupId]);
 
   const addRef = useRef<AddDialogHandle>(null);
   const tonightRef = useRef<TonightDialogHandle>(null);
@@ -215,6 +236,7 @@ export function WatchPool({
           releaseYear: row.release_year ?? null,
           tmdbRating: row.tmdb_rating ?? null,
           genres: row.genres ?? [],
+          trailerKey: row.trailer_key ?? null,
         },
         ...s,
       ]);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { REACTIONS, TIER_ICON } from "@/lib/watch-pool/constants";
 import { TMDB_POSTER_BASE } from "@/lib/tmdb-shared";
 import {
@@ -43,6 +43,18 @@ export function MovieCard({
   onDelete,
 }: MovieCardProps) {
   const [pleaText, setPleaText] = useState("");
+  const [trailerHover, setTrailerHover] = useState(false);
+  const trailerTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function startTrailerHover() {
+    if (!movie.trailerKey) return;
+    trailerTimer.current = setTimeout(() => setTrailerHover(true), 350);
+  }
+  function stopTrailerHover() {
+    if (trailerTimer.current) clearTimeout(trailerTimer.current);
+    setTrailerHover(false);
+  }
+
   const t = tallyFor(state, movie);
   const mine = myReaction(movie, state.currentFriend);
   const ret = retireState(state, movie);
@@ -106,14 +118,31 @@ export function MovieCard({
   return (
     <article className={`card${ret ? " ghosted" : ""}`}>
       <div className="card-top">
-        <span className="poster" style={{ background: posterGradient(movie.title) }}>
-          {movie.posterPath ? (
+        <span
+          className={`poster${trailerHover ? " trailer-playing" : ""}`}
+          style={{ background: posterGradient(movie.title) }}
+          onMouseEnter={startTrailerHover}
+          onMouseLeave={stopTrailerHover}
+        >
+          {trailerHover && movie.trailerKey ? (
+            <iframe
+              src={`https://www.youtube.com/embed/${movie.trailerKey}?autoplay=1&mute=1&controls=0&modestbranding=1&playsinline=1`}
+              title={`${movie.title} trailer`}
+              allow="autoplay; encrypted-media"
+              frameBorder={0}
+            />
+          ) : movie.posterPath ? (
             <img src={`${TMDB_POSTER_BASE}${movie.posterPath}`} alt="" />
           ) : (
             <>
               <i />
               <b>{initials(movie.title)}</b>
             </>
+          )}
+          {movie.trailerKey && !trailerHover && (
+            <span className="play-badge" aria-hidden="true">
+              ▶
+            </span>
           )}
         </span>
         <div>

@@ -96,6 +96,7 @@ export interface Database {
           tmdb_rating: number | null;
           media_type: "movie" | "tv";
           genres: string[];
+          trailer_key: string | null;
         };
         Insert: {
           id?: string;
@@ -114,6 +115,7 @@ export interface Database {
           tmdb_rating?: number | null;
           media_type?: "movie" | "tv";
           genres?: string[];
+          trailer_key?: string | null;
         };
         Update: {
           title?: string;
@@ -128,6 +130,7 @@ export interface Database {
           tmdb_rating?: number | null;
           media_type?: "movie" | "tv";
           genres?: string[];
+          trailer_key?: string | null;
         };
         Relationships: [];
       };

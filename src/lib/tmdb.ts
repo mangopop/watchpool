@@ -17,6 +17,9 @@ export interface TmdbMovieDetails extends TmdbSearchResult {
   voteAverage: number | null;
   // TMDB genre names, e.g. ["Comedy", "Thriller"].
   genres: string[];
+  // YouTube video id for the trailer, if TMDB has one — null lets the
+  // poster hover-preview fall back to a static image.
+  trailerKey: string | null;
 }
 
 function apiKey(): string {
@@ -98,9 +101,24 @@ export async function getWatchProviders(tmdbId: number, mediaType: TmdbMediaType
   return [...services];
 }
 
+interface TmdbVideoEntry {
+  site: string;
+  type: string;
+  key: string;
+  official?: boolean;
+}
+
+function pickTrailerKey(videos: TmdbVideoEntry[] | undefined): string | null {
+  const trailers = (videos ?? []).filter((v) => v.site === "YouTube" && v.type === "Trailer");
+  const best = trailers.find((v) => v.official) ?? trailers[0];
+  return best?.key ?? null;
+}
+
 export async function getMovieDetails(tmdbId: number, mediaType: TmdbMediaType): Promise<TmdbMovieDetails> {
   const url = new URL(`${TMDB_BASE}/${mediaType}/${tmdbId}`);
   url.searchParams.set("api_key", apiKey());
+  // Pull trailers in the same request rather than a second round-trip.
+  url.searchParams.set("append_to_response", "videos");
 
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error(`TMDB ${mediaType} lookup failed: ${res.status}`);
@@ -119,5 +137,6 @@ export async function getMovieDetails(tmdbId: number, mediaType: TmdbMediaType):
     genres: Array.isArray(data.genres)
       ? data.genres.map((g: { name: string }) => g.name).filter(Boolean)
       : [],
+    trailerKey: pickTrailerKey(data.videos?.results),
   };
 }
