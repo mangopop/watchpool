@@ -42,6 +42,8 @@ export function WatchPool({
   onSignOut,
   currentUserId,
   groupId,
+  groups,
+  onSwitchGroup,
   friends,
   initialMovies,
   initialServices,
@@ -50,6 +52,8 @@ export function WatchPool({
   onSignOut: () => Promise<void>;
   currentUserId: string;
   groupId: string;
+  groups: { id: string; name: string }[];
+  onSwitchGroup: (formData: FormData) => Promise<void>;
   friends: Friend[];
   initialMovies: Movie[];
   initialServices: string[];
@@ -274,6 +278,22 @@ export function WatchPool({
       <div className="wrap">
         <div className="bar">
           <h1 className="mark">A Few Good Films</h1>
+          {groups.length > 1 && (
+            <form action={onSwitchGroup}>
+              <select
+                name="groupId"
+                defaultValue={groupId}
+                aria-label="Switch group"
+                onChange={(e) => e.currentTarget.form?.requestSubmit()}
+              >
+                {groups.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.name}
+                  </option>
+                ))}
+              </select>
+            </form>
+          )}
           <span className="spacer" />
           <span className="who">
             <span>Signed in as {viewerName}</span>

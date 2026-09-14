@@ -1,4 +1,7 @@
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { setActiveGroup } from "@/app/actions";
+import { ACTIVE_GROUP_COOKIE } from "@/app/active-group";
 import { signOut } from "@/app/auth/actions";
 import { WatchPool } from "@/components/watch-pool/WatchPool";
 import { createClient } from "@/lib/supabase/server";
@@ -18,21 +21,32 @@ export default async function Home() {
     redirect("/login");
   }
 
-  // A user can belong to several groups eventually; for now the pool shows
-  // the one they joined first — group switching isn't built yet.
-  const { data: membership } = await supabase
+  const { data: memberships } = await supabase
     .from("group_members")
     .select("group_id")
     .eq("user_id", user.id)
-    .order("joined_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
+    .order("joined_at", { ascending: true });
 
-  if (!membership) {
+  if (!memberships || memberships.length === 0) {
     redirect("/groups");
   }
 
-  const groupId = membership.group_id;
+  const memberGroupIds = memberships.map((m) => m.group_id);
+  const { data: memberGroups } = await supabase
+    .from("groups")
+    .select("id, name")
+    .in("id", memberGroupIds);
+
+  // The active group persists across visits via a cookie set when the user
+  // switches; falls back to the first group they ever joined.
+  const activeGroupCookie = (await cookies()).get(ACTIVE_GROUP_COOKIE)?.value;
+  const groupId = memberGroupIds.includes(activeGroupCookie ?? "")
+    ? activeGroupCookie!
+    : memberGroupIds[0];
+
+  const groups = (memberGroups ?? []).sort(
+    (a, b) => memberGroupIds.indexOf(a.id) - memberGroupIds.indexOf(b.id),
+  );
 
   // These four only depend on user.id/groupId, not on each other — fired
   // together instead of chained, since each round trip's latency used to
@@ -102,6 +116,8 @@ export default async function Home() {
       onSignOut={signOut}
       currentUserId={user.id}
       groupId={groupId}
+      groups={groups}
+      onSwitchGroup={setActiveGroup}
       friends={friends}
       initialMovies={movies}
       initialServices={initialServices}
