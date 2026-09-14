@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import type { TmdbMediaType } from "@/lib/tmdb-shared";
 import { addMovieAction, setMyServiceAction, setReactionAction, updateMovieAction } from "@/lib/watch-pool/actions";
 import {
   HOT_MAX_ITEMS,
@@ -171,13 +172,14 @@ export function WatchPool({
     }
   }
 
-  async function addMovie(title: string, pitch: string, tmdbId: number | null) {
+  async function addMovie(title: string, pitch: string, tmdbId: number | null, mediaType: TmdbMediaType) {
     try {
-      const row = await addMovieAction(groupId, title, pitch, tmdbId);
+      const row = await addMovieAction(groupId, title, pitch, tmdbId, mediaType);
       setMovies((s) => [
         {
           id: row.id,
           title: row.title,
+          mediaType: row.media_type,
           recommendedBy: row.recommended_by,
           runtime: row.runtime_minutes ?? null,
           providers: row.providers,
@@ -303,7 +305,8 @@ export function WatchPool({
 
         {tonightMovie && tonight && (
           <div className="tonight-strip">
-            Watching tonight · <b>{tonightMovie.title}</b> · {runtimeLabel(tonightMovie.runtime)} · on{" "}
+            Watching tonight · <b>{tonightMovie.title}</b>
+            {tonightMovie.runtime !== null && <> · {runtimeLabel(tonightMovie.runtime)}</>} · on{" "}
             {serviceName(tonight.service)}
             <button type="button" onClick={clearTonight}>
               Clear

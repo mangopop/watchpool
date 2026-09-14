@@ -118,6 +118,7 @@ export function MovieCard({
           <h3>
             {movie.title}
             {movie.releaseYear && <span className="year"> ({movie.releaseYear})</span>}
+            {movie.mediaType === "tv" && <span className="media-tag"> Series</span>}
             {!hideTmdbRating && movie.tmdbRating !== null && (
               <span className="rating" title="TMDB rating">
                 {" "}

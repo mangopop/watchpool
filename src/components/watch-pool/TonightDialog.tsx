@@ -91,7 +91,8 @@ export const TonightDialog = forwardRef<TonightDialogHandle, TonightDialogProps>
                   <div>
                     <h3>{p.movie.title}</h3>
                     <div className="meta">
-                      {runtimeLabel(p.movie.runtime)} · on <b>{serviceName(p.service)}</b> · {verdict}
+                      {p.movie.runtime !== null && <>{runtimeLabel(p.movie.runtime)} · </>}
+                      on <b>{serviceName(p.service)}</b> · {verdict}
                     </div>
                   </div>
                   <button

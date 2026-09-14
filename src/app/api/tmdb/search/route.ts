@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { searchMovies } from "@/lib/tmdb";
+import { searchTitles } from "@/lib/tmdb";
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
   if (!query) return NextResponse.json({ results: [] });
 
   try {
-    const results = await searchMovies(query);
+    const results = await searchTitles(query);
     return NextResponse.json({ results: results.slice(0, 8) });
   } catch {
     return NextResponse.json({ error: "TMDB search failed" }, { status: 502 });

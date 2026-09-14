@@ -20,10 +20,15 @@ export interface Reaction {
   noteDismissed?: boolean;
 }
 
+export type MediaType = "movie" | "tv";
+
 export interface Movie {
   id: string;
   title: string;
+  mediaType: MediaType;
   recommendedBy: FriendId;
+  // Movies only — a series has no single runtime (episode length isn't
+  // total watch time), so this stays null for mediaType "tv".
   runtime: number | null;
   providers: string[];
   pitch: string;

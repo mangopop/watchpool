@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getMovieDetails, getWatchProviders } from "@/lib/tmdb";
+import type { TmdbMediaType } from "@/lib/tmdb-shared";
 import type { ReactionStatus, ReactionTier } from "./types";
 
 async function requireUser() {
@@ -19,12 +20,13 @@ export async function addMovieAction(
   title: string,
   pitch: string,
   tmdbId: number | null,
+  mediaType: TmdbMediaType,
 ) {
   const { supabase, user } = await requireUser();
 
   // Search results carry no runtime — look it up now, at the point the pick
   // is actually confirmed, rather than on every keystroke of the search box.
-  const details = tmdbId ? await getMovieDetails(tmdbId).catch(() => null) : null;
+  const details = tmdbId ? await getMovieDetails(tmdbId, mediaType).catch(() => null) : null;
 
   const { data, error } = await supabase
     .from("movies")
@@ -38,6 +40,9 @@ export async function addMovieAction(
       release_year: details?.releaseYear ?? null,
       runtime_minutes: details?.runtime ?? null,
       tmdb_rating: details?.voteAverage ?? null,
+      // A manual entry with no TMDB match can't be identified — defaults to
+      // "movie" the same way it always has.
+      media_type: details ? mediaType : "movie",
     })
     .select()
     .single();
@@ -45,7 +50,7 @@ export async function addMovieAction(
 
   // Providers aren't persisted (they go stale, unlike runtime) — fetched
   // fresh here so the optimistic client insert isn't stuck on a stub.
-  const providers = details ? await getWatchProviders(details.tmdbId).catch(() => []) : [];
+  const providers = details ? await getWatchProviders(details.tmdbId, mediaType).catch(() => []) : [];
 
   revalidatePath("/");
   return { ...data, providers };

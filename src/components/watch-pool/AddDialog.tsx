@@ -3,14 +3,14 @@
 import { useRef } from "react";
 import { useImperativeHandle, forwardRef, useState, useEffect } from "react";
 import { TMDB_POSTER_BASE } from "@/lib/tmdb-shared";
-import type { TmdbSearchResult } from "@/lib/tmdb-shared";
+import type { TmdbMediaType, TmdbSearchResult } from "@/lib/tmdb-shared";
 
 export interface AddDialogHandle {
   open: () => void;
 }
 
 interface AddDialogProps {
-  onAdd: (title: string, pitch: string, tmdbId: number | null) => void;
+  onAdd: (title: string, pitch: string, tmdbId: number | null, mediaType: TmdbMediaType) => void;
 }
 
 export const AddDialog = forwardRef<AddDialogHandle, AddDialogProps>(function AddDialog(
@@ -84,7 +84,8 @@ export const AddDialog = forwardRef<AddDialogHandle, AddDialogProps>(function Ad
           const t = title.trim();
           const p = pitch.trim();
           if (!t || !p) return;
-          onAdd(t, p, selected?.title === t ? selected.tmdbId : null);
+          const match = selected?.title === t ? selected : null;
+          onAdd(t, p, match?.tmdbId ?? null, match?.mediaType ?? "movie");
           dialogRef.current?.close();
         }}
       >
@@ -115,6 +116,7 @@ export const AddDialog = forwardRef<AddDialogHandle, AddDialogProps>(function Ad
                     <span>
                       {r.title}
                       {r.releaseYear ? ` (${r.releaseYear})` : ""}
+                      {r.mediaType === "tv" && <i className="media-tag"> Series</i>}
                     </span>
                   </button>
                 </li>

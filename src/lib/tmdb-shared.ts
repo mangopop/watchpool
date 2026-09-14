@@ -3,8 +3,11 @@
 
 export const TMDB_POSTER_BASE = "https://image.tmdb.org/t/p/w200";
 
+export type TmdbMediaType = "movie" | "tv";
+
 export interface TmdbSearchResult {
   tmdbId: number;
+  mediaType: TmdbMediaType;
   title: string;
   releaseYear: number | null;
   posterPath: string | null;

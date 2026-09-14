@@ -61,7 +61,9 @@ export default async function Home() {
     // runtime), so they're fetched fresh from TMDB on every load.
     Promise.all(
       (movieRows ?? []).map((m) =>
-        m.tmdb_id ? getWatchProviders(m.tmdb_id).catch(() => []) : Promise.resolve([] as string[]),
+        m.tmdb_id
+          ? getWatchProviders(m.tmdb_id, m.media_type).catch(() => [])
+          : Promise.resolve([] as string[]),
       ),
     ),
   ]);
@@ -71,6 +73,7 @@ export default async function Home() {
   const movies: Movie[] = (movieRows ?? []).map((m, i) => ({
     id: m.id,
     title: m.title,
+    mediaType: m.media_type,
     recommendedBy: m.recommended_by,
     runtime: m.runtime_minutes ?? null,
     providers: providersByMovie[i],

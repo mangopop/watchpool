@@ -1050,6 +1050,16 @@
   object-fit: cover;
   background: rgba(255, 255, 255, 0.08);
 }
+.watch-pool .media-tag {
+  font-family: var(--font-ibm-plex-mono), monospace;
+  font-style: normal;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sage-lit);
+  vertical-align: middle;
+}
 .watch-pool .modal-actions {
   display: flex;
   justify-content: flex-end;

@@ -1,12 +1,15 @@
-import type { TmdbSearchResult } from "./tmdb-shared";
+import type { TmdbMediaType, TmdbSearchResult } from "./tmdb-shared";
 
 // TMDB integration (Phase 2). Server-only — TMDB_API_KEY never reaches the
-// client. Search results carry no runtime; that needs a second /movie/{id}
-// call once a title is actually selected.
+// client. Search results carry no runtime; that needs a second /movie or
+// /tv/{id} call once a title is actually selected.
 
 const TMDB_BASE = "https://api.themoviedb.org/3";
 
 export interface TmdbMovieDetails extends TmdbSearchResult {
+  // Movies only — a series has no single runtime (episode length isn't
+  // total watch time), so this stays null for mediaType "tv" rather than
+  // standing in for something it isn't.
   runtime: number | null;
   // TMDB's own user-rating (0-10), not IMDb's — a real IMDb score needs a
   // second API (OMDb), which TODO.md's "Open decisions" already ruled out
@@ -20,13 +23,13 @@ function apiKey(): string {
   return key;
 }
 
-function releaseYear(releaseDate: string | null | undefined): number | null {
-  const year = releaseDate ? Number(releaseDate.slice(0, 4)) : NaN;
+function releaseYear(date: string | null | undefined): number | null {
+  const year = date ? Number(date.slice(0, 4)) : NaN;
   return Number.isFinite(year) && year > 0 ? year : null;
 }
 
-export async function searchMovies(query: string): Promise<TmdbSearchResult[]> {
-  const url = new URL(`${TMDB_BASE}/search/movie`);
+export async function searchTitles(query: string): Promise<TmdbSearchResult[]> {
+  const url = new URL(`${TMDB_BASE}/search/multi`);
   url.searchParams.set("api_key", apiKey());
   url.searchParams.set("query", query);
   url.searchParams.set("include_adult", "false");
@@ -35,12 +38,18 @@ export async function searchMovies(query: string): Promise<TmdbSearchResult[]> {
   if (!res.ok) throw new Error(`TMDB search failed: ${res.status}`);
   const data = await res.json();
 
-  return (data.results ?? []).map((r: Record<string, unknown>) => ({
-    tmdbId: r.id as number,
-    title: r.title as string,
-    releaseYear: releaseYear(r.release_date as string | undefined),
-    posterPath: (r.poster_path as string | null) ?? null,
-  }));
+  return (data.results ?? [])
+    .filter((r: Record<string, unknown>) => r.media_type === "movie" || r.media_type === "tv")
+    .map((r: Record<string, unknown>) => {
+      const mediaType = r.media_type as TmdbMediaType;
+      return {
+        tmdbId: r.id as number,
+        mediaType,
+        title: (mediaType === "movie" ? r.title : r.name) as string,
+        releaseYear: releaseYear((mediaType === "movie" ? r.release_date : r.first_air_date) as string | undefined),
+        posterPath: (r.poster_path as string | null) ?? null,
+      };
+    });
 }
 
 // GB only (see TODO.md "Where friends actually watch") — flatrate and
@@ -65,8 +74,8 @@ interface TmdbWatchProviderEntry {
   provider_id: number;
 }
 
-export async function getWatchProviders(tmdbId: number): Promise<string[]> {
-  const url = new URL(`${TMDB_BASE}/movie/${tmdbId}/watch/providers`);
+export async function getWatchProviders(tmdbId: number, mediaType: TmdbMediaType): Promise<string[]> {
+  const url = new URL(`${TMDB_BASE}/${mediaType}/${tmdbId}/watch/providers`);
   url.searchParams.set("api_key", apiKey());
 
   const res = await fetch(url, { cache: "no-store" });
@@ -87,20 +96,22 @@ export async function getWatchProviders(tmdbId: number): Promise<string[]> {
   return [...services];
 }
 
-export async function getMovieDetails(tmdbId: number): Promise<TmdbMovieDetails> {
-  const url = new URL(`${TMDB_BASE}/movie/${tmdbId}`);
+export async function getMovieDetails(tmdbId: number, mediaType: TmdbMediaType): Promise<TmdbMovieDetails> {
+  const url = new URL(`${TMDB_BASE}/${mediaType}/${tmdbId}`);
   url.searchParams.set("api_key", apiKey());
 
   const res = await fetch(url, { cache: "no-store" });
-  if (!res.ok) throw new Error(`TMDB movie lookup failed: ${res.status}`);
+  if (!res.ok) throw new Error(`TMDB ${mediaType} lookup failed: ${res.status}`);
   const data = await res.json();
 
   return {
     tmdbId: data.id,
-    title: data.title,
-    releaseYear: releaseYear(data.release_date),
+    mediaType,
+    title: mediaType === "movie" ? data.title : data.name,
+    releaseYear: releaseYear(mediaType === "movie" ? data.release_date : data.first_air_date),
     posterPath: data.poster_path ?? null,
-    runtime: typeof data.runtime === "number" && data.runtime > 0 ? data.runtime : null,
+    runtime:
+      mediaType === "movie" && typeof data.runtime === "number" && data.runtime > 0 ? data.runtime : null,
     voteAverage:
       typeof data.vote_average === "number" && data.vote_count > 0 ? data.vote_average : null,
   };
