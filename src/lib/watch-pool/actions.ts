@@ -6,6 +6,22 @@ import { getMovieDetails, getWatchProviders } from "@/lib/tmdb";
 import type { TmdbMediaType } from "@/lib/tmdb-shared";
 import type { ReactionStatus, ReactionTier } from "./types";
 
+export async function updateDisplayNameAction(displayName: string) {
+  const { supabase, user } = await requireUser();
+
+  const trimmed = displayName.trim();
+  if (!trimmed) throw new Error("Name can't be empty");
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ display_name: trimmed })
+    .eq("id", user.id);
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/");
+}
+
 async function requireUser() {
   const supabase = await createClient();
   const {

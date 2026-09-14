@@ -8,6 +8,7 @@ import {
   deleteMovieAction,
   setMyServiceAction,
   setReactionAction,
+  updateDisplayNameAction,
   updateMovieAction,
 } from "@/lib/watch-pool/actions";
 import {
@@ -63,6 +64,20 @@ export function WatchPool({
   const [tonight, setTonight] = useState<PoolState["tonight"]>(null);
   const [timeLimit, setTimeLimit] = useState(999);
   const [myServices, setMyServices] = useState<string[]>(initialServices);
+  const [displayName, setDisplayName] = useState(viewerName);
+  const [nameError, setNameError] = useState<string | null>(null);
+
+  async function saveDisplayName(name: string) {
+    const previous = displayName;
+    setDisplayName(name);
+    setNameError(null);
+    try {
+      await updateDisplayNameAction(name);
+    } catch (err) {
+      setDisplayName(previous);
+      setNameError(err instanceof Error ? err.message : "Couldn't save your name");
+    }
+  }
 
   // Per-device display preference, not group state — shown by default, but
   // not worth a synced column since it's just a display toggle.
@@ -296,7 +311,7 @@ export function WatchPool({
           )}
           <span className="spacer" />
           <span className="who">
-            <span>Signed in as {viewerName}</span>
+            <span>Signed in as {displayName}</span>
             <form action={onSignOut}>
               <button type="submit" className="icon-btn" title="Sign out" aria-label="Sign out">
                 <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
@@ -486,6 +501,9 @@ export function WatchPool({
         onToggleService={toggleService}
         hideTmdbRating={hideTmdbRating}
         onToggleHideTmdbRating={toggleHideTmdbRating}
+        displayName={displayName}
+        onSaveDisplayName={saveDisplayName}
+        nameError={nameError}
       />
     </div>
   );

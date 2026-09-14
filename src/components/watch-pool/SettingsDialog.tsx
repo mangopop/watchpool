@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef, useImperativeHandle, useRef } from "react";
+import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { SERVICES } from "@/lib/watch-pool/constants";
 import { myServices } from "@/lib/watch-pool/logic";
 import type { PoolState } from "@/lib/watch-pool/types";
@@ -14,14 +14,24 @@ interface SettingsDialogProps {
   onToggleService: (serviceId: string) => void;
   hideTmdbRating: boolean;
   onToggleHideTmdbRating: () => void;
+  displayName: string;
+  onSaveDisplayName: (name: string) => void | Promise<void>;
+  nameError: string | null;
 }
 
 export const SettingsDialog = forwardRef<SettingsDialogHandle, SettingsDialogProps>(
-  function SettingsDialog({ state, onToggleService, hideTmdbRating, onToggleHideTmdbRating }, ref) {
+  function SettingsDialog(
+    { state, onToggleService, hideTmdbRating, onToggleHideTmdbRating, displayName, onSaveDisplayName, nameError },
+    ref,
+  ) {
     const dialogRef = useRef<HTMLDialogElement>(null);
+    const [nameDraft, setNameDraft] = useState(displayName);
 
     useImperativeHandle(ref, () => ({
-      open: () => dialogRef.current?.showModal(),
+      open: () => {
+        setNameDraft(displayName);
+        dialogRef.current?.showModal();
+      },
     }));
 
     const mine = myServices(state);
@@ -29,6 +39,30 @@ export const SettingsDialog = forwardRef<SettingsDialogHandle, SettingsDialogPro
     return (
       <dialog ref={dialogRef}>
         <div className="modal">
+          <h2>Your name</h2>
+          <div className="field">
+            <span className="step-label">Display name</span>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const trimmed = nameDraft.trim();
+                if (trimmed && trimmed !== displayName) onSaveDisplayName(trimmed);
+              }}
+              style={{ display: "flex", gap: 8 }}
+            >
+              <input
+                type="text"
+                value={nameDraft}
+                onChange={(e) => setNameDraft(e.target.value)}
+                required
+              />
+              <button type="submit" className="btn-line">
+                Save
+              </button>
+            </form>
+            {nameError && <p className="hint">{nameError}</p>}
+          </div>
+
           <h2>Your services</h2>
           <p className="lede">
             One-time setup, per person — drives &ldquo;streaming on a service you have&rdquo;
