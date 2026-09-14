@@ -122,11 +122,18 @@ export function MovieCard({
           <h3>
             {movie.title}
             {movie.releaseYear && <span className="year"> ({movie.releaseYear})</span>}
+            {movie.tmdbRating !== null && (
+              <span className="rating" title="TMDB rating">
+                {" "}
+                ★ {movie.tmdbRating.toFixed(1)}
+              </span>
+            )}
+            {movie.runtime !== null && <span className="runtime"> · {runtimeLabel(movie.runtime)}</span>}
           </h3>
           <div className="by">{byline}</div>
         </div>
 
-        {(divisive || ret || movie.runtime !== null || movie.tmdbId) && (
+        {(divisive || ret || movie.providers.length > 0 || movie.tmdbId) && (
           <div className="flags">
             {divisive && <span className="flag divisive">Most divisive</span>}
             {ret && (
@@ -135,15 +142,13 @@ export function MovieCard({
               </span>
             )}
             {movie.providers.length > 0 ? (
-              <span className="flag where">
-                {serviceName(movie.providers[0])} · {runtimeLabel(movie.runtime)}
-              </span>
-            ) : movie.tmdbId ? (
-              // A real TMDB match with no providers — genuinely not on any
-              // tracked service right now, not a missing-data gap.
-              <span className="flag where">Not on your tracked services · {runtimeLabel(movie.runtime)}</span>
+              <span className="flag where">{serviceName(movie.providers[0])}</span>
             ) : (
-              movie.runtime !== null && <span className="flag where">{runtimeLabel(movie.runtime)}</span>
+              movie.tmdbId && (
+                // A real TMDB match with no providers — genuinely not on any
+                // tracked service right now, not a missing-data gap.
+                <span className="flag where">Not on your tracked services</span>
+              )
             )}
           </div>
         )}

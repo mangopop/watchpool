@@ -169,6 +169,7 @@ export function WatchPool({
           tmdbId: row.tmdb_id ?? null,
           posterPath: row.poster_path ?? null,
           releaseYear: row.release_year ?? null,
+          tmdbRating: row.tmdb_rating ?? null,
         },
         ...s,
       ]);

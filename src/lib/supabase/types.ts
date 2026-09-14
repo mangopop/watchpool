@@ -93,6 +93,7 @@ export interface Database {
           poster_path: string | null;
           release_year: number | null;
           runtime_minutes: number | null;
+          tmdb_rating: number | null;
         };
         Insert: {
           id?: string;
@@ -108,6 +109,7 @@ export interface Database {
           poster_path?: string | null;
           release_year?: number | null;
           runtime_minutes?: number | null;
+          tmdb_rating?: number | null;
         };
         Update: {
           title?: string;
@@ -119,6 +121,7 @@ export interface Database {
           poster_path?: string | null;
           release_year?: number | null;
           runtime_minutes?: number | null;
+          tmdb_rating?: number | null;
         };
         Relationships: [];
       };

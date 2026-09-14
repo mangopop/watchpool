@@ -37,6 +37,7 @@ export async function addMovieAction(
       poster_path: details?.posterPath ?? null,
       release_year: details?.releaseYear ?? null,
       runtime_minutes: details?.runtime ?? null,
+      tmdb_rating: details?.voteAverage ?? null,
     })
     .select()
     .single();

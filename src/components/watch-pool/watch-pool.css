@@ -568,6 +568,18 @@
   opacity: 0.6;
   font-size: 0.6em;
 }
+.watch-pool .card h3 .rating {
+  font-weight: 500;
+  text-transform: none;
+  color: var(--amber);
+  font-size: 0.55em;
+}
+.watch-pool .card h3 .runtime {
+  font-weight: 500;
+  text-transform: none;
+  opacity: 0.6;
+  font-size: 0.55em;
+}
 .watch-pool .card h3 {
   font-family: var(--font-big-shoulders-display), sans-serif;
   font-weight: 800;

@@ -8,6 +8,10 @@ const TMDB_BASE = "https://api.themoviedb.org/3";
 
 export interface TmdbMovieDetails extends TmdbSearchResult {
   runtime: number | null;
+  // TMDB's own user-rating (0-10), not IMDb's — a real IMDb score needs a
+  // second API (OMDb), which TODO.md's "Open decisions" already ruled out
+  // adding just for one field once TMDB covers metadata + providers alone.
+  voteAverage: number | null;
 }
 
 function apiKey(): string {
@@ -97,5 +101,7 @@ export async function getMovieDetails(tmdbId: number): Promise<TmdbMovieDetails>
     releaseYear: releaseYear(data.release_date),
     posterPath: data.poster_path ?? null,
     runtime: typeof data.runtime === "number" && data.runtime > 0 ? data.runtime : null,
+    voteAverage:
+      typeof data.vote_average === "number" && data.vote_count > 0 ? data.vote_average : null,
   };
 }
