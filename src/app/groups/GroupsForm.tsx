@@ -28,7 +28,7 @@ export function CreateGroupForm() {
   );
 }
 
-export function JoinGroupForm() {
+export function JoinGroupForm({ defaultCode }: { defaultCode?: string }) {
   const [state, action, pending] = useActionState(joinGroup, initialState);
 
   return (
@@ -40,6 +40,7 @@ export function JoinGroupForm() {
           name="inviteCode"
           type="text"
           placeholder="8-character code from a friend"
+          defaultValue={defaultCode}
           required
         />
       </div>

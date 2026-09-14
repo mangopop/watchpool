@@ -4,12 +4,13 @@ import { createClient } from "@/lib/supabase/server";
 import "../auth-theme.css";
 import { createInvite, revokeInvite } from "./actions";
 import { CreateGroupForm, JoinGroupForm } from "./GroupsForm";
+import { InviteActions } from "./InviteActions";
 import { isInviteActive } from "./invite-active";
 
 export default async function GroupsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; code?: string }>;
 }) {
   const supabase = await createClient();
   const {
@@ -20,7 +21,7 @@ export default async function GroupsPage({
     redirect("/login");
   }
 
-  const { error } = await searchParams;
+  const { error, code } = await searchParams;
 
   const { data: memberships } = await supabase
     .from("group_members")
@@ -79,18 +80,21 @@ export default async function GroupsPage({
                     <div className="role">
                       {r.role === "admin"
                         ? invite
-                          ? `Invite: ${invite.code} · expires ${new Date(invite.expires_at!).toLocaleDateString()}`
+                          ? `Expires ${new Date(invite.expires_at!).toLocaleDateString()}`
                           : "Admin"
                         : "Member"}
                     </div>
                   </div>
                   {r.role === "admin" &&
                     (invite ? (
-                      <form action={revokeInvite.bind(null, invite.code)}>
-                        <button type="submit" className="btn-ghost">
-                          Revoke invite
-                        </button>
-                      </form>
+                      <div className="invite-block">
+                        <InviteActions code={invite.code} groupName={r.group.name} />
+                        <form action={revokeInvite.bind(null, invite.code)}>
+                          <button type="submit" className="btn-ghost">
+                            Revoke invite
+                          </button>
+                        </form>
+                      </div>
                     ) : (
                       <form action={createInvite.bind(null, r.group.id)}>
                         <button type="submit" className="btn-ghost">
@@ -108,7 +112,7 @@ export default async function GroupsPage({
         <CreateGroupForm />
 
         <div className="divider">Or join one</div>
-        <JoinGroupForm />
+        <JoinGroupForm defaultCode={code} />
       </div>
     </div>
   );

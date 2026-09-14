@@ -197,3 +197,19 @@
   padding: 8px 10px;
   word-break: break-all;
 }
+.auth-page .invite-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+.auth-page .invite-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+.auth-page .invite-buttons {
+  display: flex;
+  gap: 8px;
+}

@@ -58,6 +58,9 @@ export function WatchPool({
   // something worth a synced column.
   const [hideTmdbRating, setHideTmdbRating] = useState(true);
   useEffect(() => {
+    // localStorage doesn't exist during SSR — this is a one-time read of the
+    // stored device preference after mount, not state synced from React.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHideTmdbRating(localStorage.getItem("watch-pool:hide-tmdb-rating") !== "0");
   }, []);
   function toggleHideTmdbRating() {
