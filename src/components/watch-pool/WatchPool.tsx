@@ -56,9 +56,9 @@ export function WatchPool({
   // Per-device display preference, not group state — TMDB's own user score
   // often reads wildly different from IMDb/RT, so it's opt-out only, not
   // something worth a synced column.
-  const [hideTmdbRating, setHideTmdbRating] = useState(false);
+  const [hideTmdbRating, setHideTmdbRating] = useState(true);
   useEffect(() => {
-    setHideTmdbRating(localStorage.getItem("watch-pool:hide-tmdb-rating") === "1");
+    setHideTmdbRating(localStorage.getItem("watch-pool:hide-tmdb-rating") !== "0");
   }, []);
   function toggleHideTmdbRating() {
     setHideTmdbRating((prev) => {
@@ -260,7 +260,22 @@ export function WatchPool({
             <span>Signed in as {viewerName}</span>
             <form action={onSignOut}>
               <button type="submit" className="icon-btn" title="Sign out" aria-label="Sign out">
-                ⏻
+                <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+                  <path
+                    d="M12 3v8"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M6.5 6.5a8 8 0 1 0 11 0"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                </svg>
               </button>
             </form>
           </span>
