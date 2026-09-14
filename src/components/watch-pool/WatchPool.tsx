@@ -287,7 +287,7 @@ export function WatchPool({
       const a = affinity(state, currentUserId, f.id);
       return a ? { name: f.name, ...a } : null;
     })
-    .filter((p): p is { name: string; pct: number; shared: number } => p !== null)
+    .filter((p): p is { name: string; pct: number; shared: number; topGenre: string | null } => p !== null)
     .sort((a, b) => b.pct - a.pct);
 
   const visibleMovies = [...movies]
@@ -470,6 +470,7 @@ export function WatchPool({
                 key={p.name}
               >
                 You &amp; {p.name} <b>{p.pct}%</b> · {p.shared} shared
+                {p.topGenre && <> · mostly {p.topGenre}</>}
               </span>
             ))}
           </div>

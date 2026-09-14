@@ -95,6 +95,7 @@ export interface HotCandidate {
 export interface Affinity {
   pct: number;
   shared: number;
+  topGenre: string | null;
 }
 
 export interface NotePrompt {

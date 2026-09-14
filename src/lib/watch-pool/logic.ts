@@ -140,6 +140,7 @@ export function affinity(state: PoolState, aId: FriendId, bId: FriendId): Affini
   const order: Record<ReactionTier, number> = { loved: 3, liked: 2, meh: 1, miss: 0 };
   let shared = 0;
   let score = 0;
+  const genreWeight = new Map<string, number>();
   for (const movie of state.movies) {
     const ra = movie.reactions[aId];
     const rb = movie.reactions[bId];
@@ -147,8 +148,27 @@ export function affinity(state: PoolState, aId: FriendId, bId: FriendId): Affini
     shared++;
     const gap = Math.abs(order[ra.rating] - order[rb.rating]);
     score += Math.max(0, 1 - gap / 3);
+    // Only count genres from titles you both actually landed on — a shared
+    // "meh" says nothing about taste, and a loved/miss split is disagreement,
+    // not a genre in common.
+    const bothPositive = order[ra.rating] >= 2 && order[rb.rating] >= 2;
+    if (bothPositive) {
+      const weight = order[ra.rating] === 3 && order[rb.rating] === 3 ? 2 : 1;
+      for (const g of movie.genres) genreWeight.set(g, (genreWeight.get(g) ?? 0) + weight);
+    }
   }
-  return shared >= 2 ? { pct: Math.round((score / shared) * 100), shared } : null;
+  if (shared < 2) return null;
+  let topGenre: string | null = null;
+  let topWeight = 0;
+  for (const [g, w] of genreWeight) {
+    if (w > topWeight) {
+      topGenre = g;
+      topWeight = w;
+    }
+  }
+  // Require enough signal that it reads as a pattern, not a coincidence.
+  if (topWeight < 2) topGenre = null;
+  return { pct: Math.round((score / shared) * 100), shared, topGenre };
 }
 
 // One-tap note prompt, only at high-value moments — never a cold text box.
