@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { FRIENDS, STORAGE_KEY } from "@/lib/watch-pool/constants";
+import { useRef, useState } from "react";
+import { addMovieAction, setReactionAction, updateMovieAction } from "@/lib/watch-pool/actions";
 import {
   HOT_MAX_ITEMS,
   affinity,
@@ -12,8 +12,7 @@ import {
   runtimeLabel,
   serviceName,
 } from "@/lib/watch-pool/logic";
-import { createInitialState } from "@/lib/watch-pool/mock-data";
-import type { FriendId, PoolState, ReactionStatus, ReactionTier } from "@/lib/watch-pool/types";
+import type { Friend, Movie, PoolState, Reaction, ReactionStatus, ReactionTier } from "@/lib/watch-pool/types";
 import { AddDialog, type AddDialogHandle } from "./AddDialog";
 import { MovieCard } from "./MovieCard";
 import { SettingsDialog, type SettingsDialogHandle } from "./SettingsDialog";
@@ -33,188 +32,188 @@ const FILTERS: { id: string; label: string }[] = [
 export function WatchPool({
   viewerName,
   onSignOut,
+  currentUserId,
+  groupId,
+  friends,
+  initialMovies,
 }: {
-  viewerName?: string;
-  onSignOut?: () => Promise<void>;
+  viewerName: string;
+  onSignOut: () => Promise<void>;
+  currentUserId: string;
+  groupId: string;
+  friends: Friend[];
+  initialMovies: Movie[];
 }) {
-  const [state, setState] = useState<PoolState>(() => createInitialState());
-  const [loaded, setLoaded] = useState(false);
+  const [movies, setMovies] = useState<Movie[]>(initialMovies);
+  const [filter, setFilter] = useState("all");
+  const [tonight, setTonight] = useState<PoolState["tonight"]>(null);
+  const [timeLimit, setTimeLimit] = useState(120);
+  const [myServices, setMyServices] = useState<string[]>([]);
 
   const addRef = useRef<AddDialogHandle>(null);
   const tonightRef = useRef<TonightDialogHandle>(null);
   const settingsRef = useRef<SettingsDialogHandle>(null);
 
-  useEffect(() => {
-    // One-time hydration from localStorage: must run post-mount so the
-    // server-rendered mock data matches the client's first render.
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      if (saved) setState(JSON.parse(saved) as PoolState);
-    } catch {
-      // ignore corrupt storage — fall back to mock data
-    }
-    setLoaded(true);
-  }, []);
+  const state: PoolState = {
+    currentFriend: currentUserId,
+    friends,
+    filter,
+    tonight,
+    timeLimit,
+    services: { [currentUserId]: myServices },
+    movies,
+  };
 
-  useEffect(() => {
-    if (!loaded) return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch {
-      // storage unavailable — state stays in memory only
-    }
-  }, [state, loaded]);
-
-  function setCurrentFriend(id: FriendId) {
-    setState((s) => ({ ...s, currentFriend: id }));
+  function reportError() {
+    alert("Couldn't save that — check your connection and try again.");
   }
 
-  function setFilter(filter: string) {
-    setState((s) => ({ ...s, filter }));
+  function applyReaction(movieId: string, reaction: Reaction) {
+    setMovies((s) =>
+      s.map((m) => (m.id === movieId ? { ...m, reactions: { ...m.reactions, [currentUserId]: reaction } } : m)),
+    );
+  }
+
+  async function persistReaction(movieId: string, cur: Reaction, next: Reaction) {
+    applyReaction(movieId, next);
+    try {
+      await setReactionAction(movieId, {
+        status: next.status,
+        rating: next.rating,
+        note: next.note,
+        noteDismissed: next.noteDismissed ?? false,
+      });
+    } catch {
+      applyReaction(movieId, cur);
+      reportError();
+    }
   }
 
   function setStatus(movieId: string, status: ReactionStatus) {
-    setState((s) => ({
-      ...s,
-      movies: s.movies.map((m) => {
-        if (m.id !== movieId) return m;
-        const cur = m.reactions[s.currentFriend] ?? { status: null, rating: null, note: null };
-        const next =
-          cur.status === status
-            ? { status: null, rating: null, note: null }
-            : {
-                status,
-                rating: status === "watched" ? cur.rating : null,
-                note: status === "watched" ? cur.note : null,
-              };
-        return { ...m, reactions: { ...m.reactions, [s.currentFriend]: next } };
-      }),
-    }));
+    const movie = movies.find((m) => m.id === movieId);
+    if (!movie) return;
+    const cur = movie.reactions[currentUserId] ?? { status: null, rating: null, note: null };
+    const next: Reaction =
+      cur.status === status
+        ? { status: null, rating: null, note: null }
+        : {
+            status,
+            rating: status === "watched" ? cur.rating : null,
+            note: status === "watched" ? cur.note : null,
+          };
+    persistReaction(movieId, cur, next);
   }
 
   function setRating(movieId: string, rating: ReactionTier) {
-    setState((s) => ({
-      ...s,
-      movies: s.movies.map((m) => {
-        if (m.id !== movieId) return m;
-        const cur = m.reactions[s.currentFriend];
-        if (!cur) return m;
-        const next = { ...cur, rating: cur.rating === rating ? null : rating, noteDismissed: false };
-        return { ...m, reactions: { ...m.reactions, [s.currentFriend]: next } };
-      }),
-    }));
+    const movie = movies.find((m) => m.id === movieId);
+    const cur = movie?.reactions[currentUserId];
+    if (!cur) return;
+    const next: Reaction = { ...cur, rating: cur.rating === rating ? null : rating, noteDismissed: false };
+    persistReaction(movieId, cur, next);
   }
 
   function setNote(movieId: string, note: string) {
-    setState((s) => ({
-      ...s,
-      movies: s.movies.map((m) => {
-        if (m.id !== movieId) return m;
-        const cur = m.reactions[s.currentFriend];
-        if (!cur) return m;
-        return { ...m, reactions: { ...m.reactions, [s.currentFriend]: { ...cur, note } } };
-      }),
-    }));
+    const movie = movies.find((m) => m.id === movieId);
+    const cur = movie?.reactions[currentUserId];
+    if (!cur) return;
+    persistReaction(movieId, cur, { ...cur, note });
   }
 
   function dismissNote(movieId: string) {
-    setState((s) => ({
-      ...s,
-      movies: s.movies.map((m) => {
-        if (m.id !== movieId) return m;
-        const cur = m.reactions[s.currentFriend];
-        if (!cur) return m;
-        return { ...m, reactions: { ...m.reactions, [s.currentFriend]: { ...cur, noteDismissed: true } } };
-      }),
-    }));
+    const movie = movies.find((m) => m.id === movieId);
+    const cur = movie?.reactions[currentUserId];
+    if (!cur) return;
+    persistReaction(movieId, cur, { ...cur, noteDismissed: true });
   }
 
-  function submitPlea(movieId: string, plea: string) {
-    setState((s) => ({
-      ...s,
-      movies: s.movies.map((m) => (m.id === movieId ? { ...m, plea, revived: true } : m)),
-    }));
+  async function submitPlea(movieId: string, plea: string) {
+    const prev = movies.find((m) => m.id === movieId);
+    setMovies((s) => s.map((m) => (m.id === movieId ? { ...m, plea, revived: true } : m)));
+    try {
+      await updateMovieAction(movieId, { plea, revived: true });
+    } catch {
+      if (prev) setMovies((s) => s.map((m) => (m.id === movieId ? prev : m)));
+      reportError();
+    }
   }
 
-  function bumpBack(movieId: string) {
-    setState((s) => ({
-      ...s,
-      movies: s.movies.map((m) =>
-        m.id === movieId ? { ...m, revived: true, bumpedBy: s.currentFriend } : m,
-      ),
-    }));
+  async function bumpBack(movieId: string) {
+    const prev = movies.find((m) => m.id === movieId);
+    setMovies((s) =>
+      s.map((m) => (m.id === movieId ? { ...m, revived: true, bumpedBy: currentUserId } : m)),
+    );
+    try {
+      await updateMovieAction(movieId, { revived: true, bumped_by: currentUserId });
+    } catch {
+      if (prev) setMovies((s) => s.map((m) => (m.id === movieId ? prev : m)));
+      reportError();
+    }
   }
 
-  function addMovie(title: string, pitch: string) {
-    setState((s) => ({
-      ...s,
-      movies: [
+  async function addMovie(title: string, pitch: string) {
+    try {
+      const row = await addMovieAction(groupId, title, pitch);
+      setMovies((s) => [
         {
-          id: `m${Date.now()}`,
-          title,
-          recommendedBy: s.currentFriend,
-          pitch,
+          id: row.id,
+          title: row.title,
+          recommendedBy: row.recommended_by,
           runtime: 110,
           providers: ["prime"],
-          dateAdded: new Date().toISOString(),
+          pitch: row.pitch,
+          dateAdded: row.date_added,
           reactions: {},
         },
-        ...s.movies,
-      ],
-    }));
-  }
-
-  function setTimeLimit(mins: number) {
-    setState((s) => ({ ...s, timeLimit: mins }));
+        ...s,
+      ]);
+    } catch {
+      reportError();
+    }
   }
 
   function lockTonight(movieId: string, service: string) {
-    setState((s) => ({ ...s, tonight: { id: movieId, service } }));
+    setTonight({ id: movieId, service });
   }
 
   function clearTonight() {
-    setState((s) => ({ ...s, tonight: null }));
+    setTonight(null);
   }
 
   function toggleService(serviceId: string) {
-    setState((s) => {
-      const arr = s.services[s.currentFriend] ?? [];
-      const next = arr.includes(serviceId) ? arr.filter((id) => id !== serviceId) : [...arr, serviceId];
-      return { ...s, services: { ...s.services, [s.currentFriend]: next } };
-    });
+    setMyServices((s) => (s.includes(serviceId) ? s.filter((id) => id !== serviceId) : [...s, serviceId]));
   }
 
-  const tonightMovie = state.tonight ? state.movies.find((m) => m.id === state.tonight!.id) : null;
+  const tonightMovie = tonight ? movies.find((m) => m.id === tonight.id) : null;
   const hot = hotCandidates(state);
   const hero = hot[0];
   const minis = hot.slice(1, HOT_MAX_ITEMS);
   const overflow = hot.length - HOT_MAX_ITEMS;
 
-  const tastePairs = FRIENDS.filter((f) => f.id !== state.currentFriend)
+  const tastePairs = friends
+    .filter((f) => f.id !== currentUserId)
     .map((f) => {
-      const a = affinity(state, state.currentFriend, f.id);
+      const a = affinity(state, currentUserId, f.id);
       return a ? { name: f.name, ...a } : null;
     })
     .filter((p): p is { name: string; pct: number; shared: number } => p !== null)
     .sort((a, b) => b.pct - a.pct);
 
-  const visibleMovies = [...state.movies]
+  const visibleMovies = [...movies]
     .sort((a, b) => new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime())
     .filter((m) => passesFilter(state, m));
 
   let ignoredCount = 0;
   let pannedCount = 0;
-  for (const m of state.movies) {
-    const r = retireState(m);
+  for (const m of movies) {
+    const r = retireState(state, m);
     if (!r) continue;
     if (r.bucket === "ignored") ignoredCount++;
     else pannedCount++;
   }
   const shelfHead =
-    state.filter === "ignored"
+    filter === "ignored"
       ? `Ignored · ${visibleMovies.length} going unwatched`
-      : state.filter === "panned"
+      : filter === "panned"
         ? `Panned · ${visibleMovies.length} retired for good`
         : `The pool · ${visibleMovies.length} live${ignoredCount ? ` · ${ignoredCount} ignored` : ""}${
             pannedCount ? ` · ${pannedCount} panned` : ""
@@ -228,29 +227,13 @@ export function WatchPool({
             Watch<i>·</i>Pool
           </h1>
           <span className="spacer" />
-          {viewerName && onSignOut && (
-            <span className="who">
-              <span>Signed in as {viewerName}</span>
-              <form action={onSignOut}>
-                <button type="submit" className="icon-btn" title="Sign out" aria-label="Sign out">
-                  ⏻
-                </button>
-              </form>
-            </span>
-          )}
           <span className="who">
-            <span>Viewing as</span>
-            <select
-              aria-label="Switch viewer"
-              value={state.currentFriend}
-              onChange={(e) => setCurrentFriend(e.target.value)}
-            >
-              {FRIENDS.map((f) => (
-                <option key={f.id} value={f.id}>
-                  {f.name}
-                </option>
-              ))}
-            </select>
+            <span>Signed in as {viewerName}</span>
+            <form action={onSignOut}>
+              <button type="submit" className="icon-btn" title="Sign out" aria-label="Sign out">
+                ⏻
+              </button>
+            </form>
           </span>
           <button
             className="icon-btn"
@@ -268,10 +251,10 @@ export function WatchPool({
           </button>
         </div>
 
-        {tonightMovie && state.tonight && (
+        {tonightMovie && tonight && (
           <div className="tonight-strip">
             Watching tonight · <b>{tonightMovie.title}</b> · {runtimeLabel(tonightMovie.runtime)} · on{" "}
-            {serviceName(state.tonight.service)}
+            {serviceName(tonight.service)}
             <button type="button" onClick={clearTonight}>
               Clear
             </button>
@@ -304,10 +287,10 @@ export function WatchPool({
               <q>{hero.movie.pitch}</q>
               <cite className="said">
                 —{" "}
-                {hero.movie.recommendedBy === state.currentFriend ? (
+                {hero.movie.recommendedBy === currentUserId ? (
                   <b className="yours">You</b>
                 ) : (
-                  <b>{friendName(hero.movie.recommendedBy)}</b>
+                  <b>{friendName(friends, hero.movie.recommendedBy)}</b>
                 )}
               </cite>
             </div>
@@ -377,7 +360,7 @@ export function WatchPool({
             <button
               key={f.id}
               className="chip"
-              aria-pressed={state.filter === f.id}
+              aria-pressed={filter === f.id}
               onClick={() => setFilter(f.id)}
             >
               {f.label}

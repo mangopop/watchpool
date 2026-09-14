@@ -1,14 +1,7 @@
-import type { Friend, ReactionTier, Service } from "./types";
+import type { ReactionTier, Service } from "./types";
 
-// Mock friend group and streaming services — will be replaced by real
-// group membership (Supabase) and TMDB provider data in later phases.
-export const FRIENDS: Friend[] = [
-  { id: "simon", name: "Simon" },
-  { id: "jake", name: "Jake" },
-  { id: "priya", name: "Priya" },
-  { id: "mia", name: "Mia" },
-];
-
+// Mock streaming services — will be replaced by real TMDB provider data in
+// a later phase. Friend group now comes from real group membership.
 export const SERVICES: Service[] = [
   { id: "netflix", name: "Netflix" },
   { id: "prime", name: "Prime Video" },
@@ -51,5 +44,3 @@ export const POSTER_PAIRS: [string, string][] = [
   ["#8C6A4F", "#3A2718"],
   ["#5C8551", "#23361F"],
 ];
-
-export const STORAGE_KEY = "watchpool_mock_v1";

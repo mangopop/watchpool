@@ -1,6 +1,7 @@
-import { FRIENDS, HOT_MAX, POSTER_PAIRS, SERVICES, WEIGHT } from "./constants";
+import { HOT_MAX, POSTER_PAIRS, SERVICES, WEIGHT } from "./constants";
 import type {
   Affinity,
+  Friend,
   FriendId,
   HotCandidate,
   Movie,
@@ -13,8 +14,8 @@ import type {
   TonightResult,
 } from "./types";
 
-export function friendName(id: FriendId): string {
-  return FRIENDS.find((f) => f.id === id)?.name ?? id;
+export function friendName(friends: Friend[], id: FriendId): string {
+  return friends.find((f) => f.id === id)?.name ?? id;
 }
 
 export function serviceName(id: string): string {
@@ -58,7 +59,7 @@ export function myServices(state: PoolState): string[] {
   return state.services[state.currentFriend] ?? [];
 }
 
-export function tallyFor(movie: Movie): Tally {
+export function tallyFor(state: PoolState, movie: Movie): Tally {
   const t: Tally = {
     want: 0,
     watched: 0,
@@ -67,7 +68,7 @@ export function tallyFor(movie: Movie): Tally {
     liked: 0,
     meh: 0,
     miss: 0,
-    total: FRIENDS.length,
+    total: state.friends.length,
     names: { loved: [], liked: [], meh: [], miss: [] },
     notes: [],
     score: 0,
@@ -82,10 +83,10 @@ export function tallyFor(movie: Movie): Tally {
       t.watched++;
       if (r.rating) {
         t[r.rating]++;
-        t.names[r.rating].push(friendName(fid));
+        t.names[r.rating].push(friendName(state.friends, fid));
         t.score += WEIGHT[r.rating];
       }
-      if (r.note) t.notes.push({ who: friendName(fid), note: r.note });
+      if (r.note) t.notes.push({ who: friendName(state.friends, fid), note: r.note });
     } else if (r.status === "skip") t.skip++;
   }
   // loved counts full, liked half, miss subtracts
@@ -96,9 +97,9 @@ export function tallyFor(movie: Movie): Tally {
 }
 
 // Two buckets. Ignored can be revived; panned is final.
-export function retireState(movie: Movie): RetireState | null {
+export function retireState(state: PoolState, movie: Movie): RetireState | null {
   if (movie.revived) return null;
-  const t = tallyFor(movie);
+  const t = tallyFor(state, movie);
   if (t.watched >= 2 && t.score < 0 && t.want === 0) {
     return { bucket: "panned", why: "the group didn't like it" };
   }
@@ -112,14 +113,14 @@ export function retireState(movie: Movie): RetireState | null {
 }
 
 export function livePool(state: PoolState): Movie[] {
-  return state.movies.filter((m) => !retireState(m));
+  return state.movies.filter((m) => !retireState(state, m));
 }
 
 // What's Hot: near-unanimous and genuinely loved, still actionable for you.
 export function hotCandidates(state: PoolState): HotCandidate[] {
   return livePool(state)
     .map((movie): HotCandidate | null => {
-      const t = tallyFor(movie);
+      const t = tallyFor(state, movie);
       const missing = t.total - t.watched - t.skip;
       if (missing > 1) return null;
       if (t.watched < 2) return null;
@@ -173,10 +174,10 @@ export function notePrompt(state: PoolState, movie: Movie, t: Tally, mine: React
   let question: string;
   if (opposed) question = "You're the outlier — why?";
   else if (lastWatcher) question = "You had the last word";
-  else if (!mineOwn) question = `Was ${friendName(rec)} right?`;
+  else if (!mineOwn) question = `Was ${friendName(state.friends, rec)} right?`;
   else return null; // your own pick and no disagreement — nothing worth asking
 
-  const recName = friendName(rec);
+  const recName = friendName(state.friends, rec);
   const chips =
     mine.rating === "loved"
       ? mineOwn
@@ -218,7 +219,7 @@ export function tonightPicks(state: PoolState): TonightResult {
       out.tooLong++;
       continue;
     }
-    const t = tallyFor(movie);
+    const t = tallyFor(state, movie);
     out.picks.push({
       movie,
       tally: t,
@@ -233,7 +234,7 @@ export function tonightPicks(state: PoolState): TonightResult {
 }
 
 export function passesFilter(state: PoolState, movie: Movie): boolean {
-  const ret = retireState(movie);
+  const ret = retireState(state, movie);
   if (state.filter === "ignored") return !!ret && ret.bucket === "ignored";
   if (state.filter === "panned") return !!ret && ret.bucket === "panned";
   if (ret) return false;

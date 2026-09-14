@@ -41,6 +41,7 @@ export interface Tonight {
 
 export interface PoolState {
   currentFriend: FriendId;
+  friends: Friend[];
   filter: string;
   tonight: Tonight | null;
   timeLimit: number;

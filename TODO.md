@@ -75,17 +75,22 @@ four-tier reactions, decide-for-me chain, retirement, attribution.
 - [x] Auth (see Open Decisions) — invite-only per group (an invite joins one
       group, not the whole app). Magic-link sign-in/out is live
       (`src/app/login/`, `src/app/auth/`)
-- [ ] Real database replacing localStorage
+- [x] Real database replacing localStorage — movies/reactions read and
+      write through Supabase (`src/lib/watch-pool/actions.ts`), scoped to
+      the signed-in user's first group; friend roster comes from real
+      `group_members`/`profiles`, not the mock POC group
 - [x] A "create a group" / "join via invite" flow — you're the first admin,
       but any group can bootstrap itself without you touching the database
       (`src/app/groups/`)
 - [x] Pool view, add-recommendation flow, status toggles, reactions —
       functionally identical to the POC, still manual title entry. Ported
-      to React (`src/components/watch-pool/`), still running on the POC's
-      mock friend group + `localStorage` — needs rewiring to Supabase once
-      auth/groups exist
-- [ ] Deploy somewhere reachable on friends' phones (even rough) so the
-      group can start actually using it
+      to React (`src/components/watch-pool/`), now backed by Supabase.
+      Per-person streaming services are still session-only (reset on
+      reload) until the Phase 3 settings screen persists them
+
+Phase 1 is done. Deploy moved to the end of Phase 3 — not going out to
+friends' phones until it's been exercised locally end-to-end, including
+the streaming-providers/decide-for-me chain.
 
 ### Phase 2 — TMDB integration
 - [ ] Title search/autocomplete on add, replacing manual entry
@@ -101,6 +106,9 @@ four-tier reactions, decide-for-me chain, retirement, attribution.
 - [ ] Re-evaluate: is TMDB's provider data enough, or is there a real gap
       only a JustWatch partner deal would close? (Likely no — revisit only
       if something concrete is missing)
+- [ ] Deploy somewhere reachable on friends' phones, once the above is
+      tested and working locally end-to-end — this is the first time the
+      group actually gets to use it
 
 ### Phase 4 — Social polish
 - [ ] Activity feed (who watched/reacted to what, recently)

@@ -38,9 +38,9 @@ export function MovieCard({
   onBump,
 }: MovieCardProps) {
   const [pleaText, setPleaText] = useState("");
-  const t = tallyFor(movie);
+  const t = tallyFor(state, movie);
   const mine = myReaction(movie, state.currentFriend);
-  const ret = retireState(movie);
+  const ret = retireState(state, movie);
   const divisive = t.loved + t.liked > 0 && t.miss > 0;
 
   const split: { cls: string; tier: ReactionTier }[] = (
@@ -61,14 +61,14 @@ export function MovieCard({
       </>
     ) : (
       <>
-        <b>{friendName(movie.recommendedBy)}</b>&rsquo;s pick · {daysAgoLabel(movie.dateAdded)}
+        <b>{friendName(state.friends, movie.recommendedBy)}</b>&rsquo;s pick · {daysAgoLabel(movie.dateAdded)}
       </>
     );
 
   const pitchedBy = movie.recommendedBy === state.currentFriend ? (
     <b className="yours">You</b>
   ) : (
-    <b>{friendName(movie.recommendedBy)}</b>
+    <b>{friendName(state.friends, movie.recommendedBy)}</b>
   );
 
   let revive: React.ReactNode = null;
@@ -140,11 +140,13 @@ export function MovieCard({
 
       {movie.plea && (
         <p className="defence">
-          <span>{friendName(movie.recommendedBy)} pleads the case</span>
+          <span>{friendName(state.friends, movie.recommendedBy)} pleads the case</span>
           {movie.plea}
         </p>
       )}
-      {movie.bumpedBy && <div className="ruled-out">Bumped back by {friendName(movie.bumpedBy)}</div>}
+      {movie.bumpedBy && (
+        <div className="ruled-out">Bumped back by {friendName(state.friends, movie.bumpedBy)}</div>
+      )}
 
       <div className="tally">
         <span>
