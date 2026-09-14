@@ -102,10 +102,22 @@ the streaming-providers/decide-for-me chain.
       match (manual entries, obscure titles)
 
 ### Phase 3 — Decide for me + streaming providers
-- [ ] Pull `/watch/providers` from TMDB (JustWatch-sourced, free) per title
-- [ ] Per-person "your services" settings screen (as in the POC)
-- [ ] Wire the real filter chain: pool → not watched/passed → on your
-      service → fits your time → ranked by group verdict
+- [x] Pull `/watch/providers` from TMDB (JustWatch-sourced, free) per title
+      — fetched live on every pool load (`getWatchProviders` in
+      `src/lib/tmdb.ts`), not stored, since availability drifts over time
+      the way runtime never does. GB only. Counts flatrate + ads-supported
+      tiers as "on your service"; BBC iPlayer is the one exception — TMDB
+      always files it under the free tier (license-funded, never
+      flatrate/ads), so that tier is included too, scoped safely by the
+      provider-id map so no other free-tier service can leak in
+- [x] Per-person "your services" settings screen (as in the POC) — now
+      persisted (`user_services` table, RLS'd to the owning user only;
+      `SettingsDialog.tsx` / `setMyServiceAction`), replacing the
+      session-only `useState` from Phase 1
+- [x] Wire the real filter chain: pool → not watched/passed → on your
+      service → fits your time → ranked by group verdict — `logic.ts`
+      already had this from Phase 1/2; it was running on stub provider
+      data (`["prime"]` hardcoded) until this phase supplied the real feed
 - [ ] Re-evaluate: is TMDB's provider data enough, or is there a real gap
       only a JustWatch partner deal would close? (Likely no — revisit only
       if something concrete is missing)

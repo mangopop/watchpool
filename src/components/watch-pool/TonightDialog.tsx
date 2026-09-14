@@ -111,9 +111,6 @@ export const TonightDialog = forwardRef<TonightDialogHandle, TonightDialogProps>
         </div>
 
         {reasons.length > 0 && <div className="ruled-out">Ruled out: {reasons.join(" · ")}</div>}
-        <p className="mock-note">
-          Providers and runtimes are stand-in data — TMDB supplies both in the real build
-        </p>
         <div className="modal-actions">
           <button type="button" className="btn-ghost" onClick={() => dialogRef.current?.close()}>
             Close

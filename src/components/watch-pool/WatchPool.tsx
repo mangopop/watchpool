@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { addMovieAction, setReactionAction, updateMovieAction } from "@/lib/watch-pool/actions";
+import { addMovieAction, setMyServiceAction, setReactionAction, updateMovieAction } from "@/lib/watch-pool/actions";
 import {
   HOT_MAX_ITEMS,
   affinity,
@@ -36,6 +36,7 @@ export function WatchPool({
   groupId,
   friends,
   initialMovies,
+  initialServices,
 }: {
   viewerName: string;
   onSignOut: () => Promise<void>;
@@ -43,12 +44,13 @@ export function WatchPool({
   groupId: string;
   friends: Friend[];
   initialMovies: Movie[];
+  initialServices: string[];
 }) {
   const [movies, setMovies] = useState<Movie[]>(initialMovies);
   const [filter, setFilter] = useState("all");
   const [tonight, setTonight] = useState<PoolState["tonight"]>(null);
   const [timeLimit, setTimeLimit] = useState(120);
-  const [myServices, setMyServices] = useState<string[]>([]);
+  const [myServices, setMyServices] = useState<string[]>(initialServices);
 
   const addRef = useRef<AddDialogHandle>(null);
   const tonightRef = useRef<TonightDialogHandle>(null);
@@ -159,7 +161,7 @@ export function WatchPool({
           title: row.title,
           recommendedBy: row.recommended_by,
           runtime: row.runtime_minutes ?? null,
-          providers: ["prime"],
+          providers: row.providers,
           pitch: row.pitch,
           dateAdded: row.date_added,
           reactions: {},
@@ -182,8 +184,15 @@ export function WatchPool({
     setTonight(null);
   }
 
-  function toggleService(serviceId: string) {
-    setMyServices((s) => (s.includes(serviceId) ? s.filter((id) => id !== serviceId) : [...s, serviceId]));
+  async function toggleService(serviceId: string) {
+    const wasEnabled = myServices.includes(serviceId);
+    setMyServices((s) => (wasEnabled ? s.filter((id) => id !== serviceId) : [...s, serviceId]));
+    try {
+      await setMyServiceAction(serviceId, !wasEnabled);
+    } catch {
+      setMyServices((s) => (wasEnabled ? [...s, serviceId] : s.filter((id) => id !== serviceId)));
+      reportError();
+    }
   }
 
   const tonightMovie = tonight ? movies.find((m) => m.id === tonight.id) : null;

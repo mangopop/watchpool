@@ -126,7 +126,7 @@ export function MovieCard({
           <div className="by">{byline}</div>
         </div>
 
-        {(divisive || ret || movie.providers.length > 0) && (
+        {(divisive || ret || movie.runtime !== null || movie.tmdbId) && (
           <div className="flags">
             {divisive && <span className="flag divisive">Most divisive</span>}
             {ret && (
@@ -134,10 +134,16 @@ export function MovieCard({
                 {ret.bucket === "panned" ? "Panned" : "Ignored"} · {ret.why}
               </span>
             )}
-            {movie.providers.length > 0 && (
+            {movie.providers.length > 0 ? (
               <span className="flag where">
                 {serviceName(movie.providers[0])} · {runtimeLabel(movie.runtime)}
               </span>
+            ) : movie.tmdbId ? (
+              // A real TMDB match with no providers — genuinely not on any
+              // tracked service right now, not a missing-data gap.
+              <span className="flag where">Not on your tracked services · {runtimeLabel(movie.runtime)}</span>
+            ) : (
+              movie.runtime !== null && <span className="flag where">{runtimeLabel(movie.runtime)}</span>
             )}
           </div>
         )}

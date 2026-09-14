@@ -150,6 +150,20 @@ export interface Database {
         };
         Relationships: [];
       };
+      user_services: {
+        Row: {
+          user_id: string;
+          service_id: string;
+          created_at: string;
+        };
+        Insert: {
+          user_id: string;
+          service_id: string;
+          created_at?: string;
+        };
+        Update: Record<string, never>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {

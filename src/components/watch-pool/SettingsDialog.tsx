@@ -29,7 +29,7 @@ export const SettingsDialog = forwardRef<SettingsDialogHandle, SettingsDialogPro
         <div className="modal">
           <h2>Your services</h2>
           <p className="lede">
-            One-time setup, per person — drives &ldquo;streaming on a service someone has&rdquo;
+            One-time setup, per person — drives &ldquo;streaming on a service you have&rdquo;
           </p>
           <div className="field">
             <span className="step-label">Your services</span>

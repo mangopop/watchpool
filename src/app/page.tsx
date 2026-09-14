@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { signOut } from "@/app/auth/actions";
 import { WatchPool } from "@/components/watch-pool/WatchPool";
 import { createClient } from "@/lib/supabase/server";
+import { getWatchProviders } from "@/lib/tmdb";
 import type { Friend, Movie } from "@/lib/watch-pool/types";
 
 export default async function Home() {
@@ -63,31 +64,39 @@ export default async function Home() {
       ? await supabase.from("reactions").select("*").in("movie_id", movieIds)
       : { data: [] };
 
-  // providers are still a stand-in value until Phase 3 wires up TMDB
-  // /watch/providers — runtime/poster/year are real as of Phase 2.
-  const movies: Movie[] = (movieRows ?? []).map((m) => ({
-    id: m.id,
-    title: m.title,
-    recommendedBy: m.recommended_by,
-    runtime: m.runtime_minutes ?? null,
-    providers: ["prime"],
-    pitch: m.pitch,
-    dateAdded: m.date_added,
-    tmdbId: m.tmdb_id ?? null,
-    posterPath: m.poster_path ?? null,
-    releaseYear: m.release_year ?? null,
-    reactions: Object.fromEntries(
-      (reactionRows ?? [])
-        .filter((r) => r.movie_id === m.id)
-        .map((r) => [
-          r.user_id,
-          { status: r.status, rating: r.rating, note: r.note, noteDismissed: r.note_dismissed },
-        ]),
-    ),
-    plea: m.plea ?? undefined,
-    revived: m.revived,
-    bumpedBy: m.bumped_by ?? undefined,
-  }));
+  // Providers aren't stored — availability drifts over time (unlike
+  // runtime), so they're fetched fresh from TMDB on every load.
+  const movies: Movie[] = await Promise.all(
+    (movieRows ?? []).map(async (m) => ({
+      id: m.id,
+      title: m.title,
+      recommendedBy: m.recommended_by,
+      runtime: m.runtime_minutes ?? null,
+      providers: m.tmdb_id ? await getWatchProviders(m.tmdb_id).catch(() => []) : [],
+      pitch: m.pitch,
+      dateAdded: m.date_added,
+      tmdbId: m.tmdb_id ?? null,
+      posterPath: m.poster_path ?? null,
+      releaseYear: m.release_year ?? null,
+      reactions: Object.fromEntries(
+        (reactionRows ?? [])
+          .filter((r) => r.movie_id === m.id)
+          .map((r) => [
+            r.user_id,
+            { status: r.status, rating: r.rating, note: r.note, noteDismissed: r.note_dismissed },
+          ]),
+      ),
+      plea: m.plea ?? undefined,
+      revived: m.revived,
+      bumpedBy: m.bumped_by ?? undefined,
+    })),
+  );
+
+  const { data: serviceRows } = await supabase
+    .from("user_services")
+    .select("service_id")
+    .eq("user_id", user.id);
+  const initialServices = (serviceRows ?? []).map((r) => r.service_id);
 
   return (
     <WatchPool
@@ -97,6 +106,7 @@ export default async function Home() {
       groupId={groupId}
       friends={friends}
       initialMovies={movies}
+      initialServices={initialServices}
     />
   );
 }

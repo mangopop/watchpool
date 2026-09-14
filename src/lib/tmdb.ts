@@ -39,6 +39,50 @@ export async function searchMovies(query: string): Promise<TmdbSearchResult[]> {
   }));
 }
 
+// GB only (see TODO.md "Where friends actually watch") — flatrate and
+// ads-supported tiers count as "on your service"; rent/buy don't. "free" is
+// also included, but only matters for BBC iPlayer: TMDB always categorises
+// iPlayer there (license-funded, never flatrate/ads), and the id map below
+// means no other "free" provider can leak in through this tier.
+const TMDB_REGION = "GB";
+
+// TMDB provider_id -> our app-internal service id (src/lib/watch-pool/constants.ts).
+// Verified against GET /watch/providers/movie?watch_region=GB.
+const PROVIDER_ID_TO_SERVICE: Record<number, string> = {
+  8: "netflix",
+  9: "prime",
+  337: "disney",
+  11: "mubi",
+  39: "now",
+  38: "iplayer",
+};
+
+interface TmdbWatchProviderEntry {
+  provider_id: number;
+}
+
+export async function getWatchProviders(tmdbId: number): Promise<string[]> {
+  const url = new URL(`${TMDB_BASE}/movie/${tmdbId}/watch/providers`);
+  url.searchParams.set("api_key", apiKey());
+
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) throw new Error(`TMDB watch providers failed: ${res.status}`);
+  const data = await res.json();
+
+  const region = data.results?.[TMDB_REGION];
+  if (!region) return [];
+
+  const entries: TmdbWatchProviderEntry[] = [
+    ...(region.flatrate ?? []),
+    ...(region.ads ?? []),
+    ...(region.free ?? []),
+  ];
+  const services = new Set(
+    entries.map((e) => PROVIDER_ID_TO_SERVICE[e.provider_id]).filter((id): id is string => !!id),
+  );
+  return [...services];
+}
+
 export async function getMovieDetails(tmdbId: number): Promise<TmdbMovieDetails> {
   const url = new URL(`${TMDB_BASE}/movie/${tmdbId}`);
   url.searchParams.set("api_key", apiKey());

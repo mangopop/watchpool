@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getMovieDetails } from "@/lib/tmdb";
+import { getMovieDetails, getWatchProviders } from "@/lib/tmdb";
 import type { ReactionStatus, ReactionTier } from "./types";
 
 async function requireUser() {
@@ -42,8 +42,27 @@ export async function addMovieAction(
     .single();
   if (error) throw new Error(error.message);
 
+  // Providers aren't persisted (they go stale, unlike runtime) — fetched
+  // fresh here so the optimistic client insert isn't stuck on a stub.
+  const providers = details ? await getWatchProviders(details.tmdbId).catch(() => []) : [];
+
   revalidatePath("/");
-  return data;
+  return { ...data, providers };
+}
+
+export async function setMyServiceAction(serviceId: string, enabled: boolean) {
+  const { supabase, user } = await requireUser();
+  if (enabled) {
+    const { error } = await supabase.from("user_services").insert({ user_id: user.id, service_id: serviceId });
+    if (error) throw new Error(error.message);
+  } else {
+    const { error } = await supabase
+      .from("user_services")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("service_id", serviceId);
+    if (error) throw new Error(error.message);
+  }
 }
 
 export async function setReactionAction(

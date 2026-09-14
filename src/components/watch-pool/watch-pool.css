@@ -1113,15 +1113,6 @@
   color: var(--dust);
   line-height: 1.7;
 }
-.watch-pool .mock-note {
-  font-family: var(--font-ibm-plex-mono), monospace;
-  font-size: 9px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #6e6757;
-  border-top: 1px dashed var(--rail);
-  padding-top: 10px;
-}
 
 @media (prefers-reduced-motion: reduce) {
   .watch-pool .hot::before {
