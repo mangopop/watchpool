@@ -35,9 +35,28 @@ export default async function GroupsPage({
       ? await supabase.from("groups").select("id, name").in("id", groupIds)
       : { data: [] };
 
+  const { data: allMembers } =
+    groupIds.length > 0
+      ? await supabase.from("group_members").select("group_id, user_id").in("group_id", groupIds)
+      : { data: [] };
+
+  const memberUserIds = [...new Set((allMembers ?? []).map((m) => m.user_id))];
+
+  const { data: memberProfiles } =
+    memberUserIds.length > 0
+      ? await supabase.from("profiles").select("id, display_name").in("id", memberUserIds)
+      : { data: [] };
+
+  const nameById = new Map((memberProfiles ?? []).map((p) => [p.id, p.display_name]));
+
   const rows = (memberships ?? []).map((m) => ({
     role: m.role,
     group: groups?.find((g) => g.id === m.group_id),
+    memberNames: (allMembers ?? [])
+      .filter((gm) => gm.group_id === m.group_id)
+      .map((gm) => nameById.get(gm.user_id))
+      .filter((name): name is string => Boolean(name))
+      .sort((a, b) => a.localeCompare(b)),
   }));
 
   const adminGroupIds = rows
@@ -84,6 +103,9 @@ export default async function GroupsPage({
                           : "Admin"
                         : "Member"}
                     </div>
+                    {r.memberNames.length > 0 && (
+                      <div className="members">{r.memberNames.join(", ")}</div>
+                    )}
                   </div>
                   {r.role === "admin" &&
                     (invite ? (

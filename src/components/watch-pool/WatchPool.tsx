@@ -60,15 +60,14 @@ export function WatchPool({
   const [timeLimit, setTimeLimit] = useState(999);
   const [myServices, setMyServices] = useState<string[]>(initialServices);
 
-  // Per-device display preference, not group state — TMDB's own user score
-  // often reads wildly different from IMDb/RT, so it's opt-out only, not
-  // something worth a synced column.
-  const [hideTmdbRating, setHideTmdbRating] = useState(true);
+  // Per-device display preference, not group state — shown by default, but
+  // not worth a synced column since it's just a display toggle.
+  const [hideTmdbRating, setHideTmdbRating] = useState(false);
   useEffect(() => {
     // localStorage doesn't exist during SSR — this is a one-time read of the
     // stored device preference after mount, not state synced from React.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setHideTmdbRating(localStorage.getItem("watch-pool:hide-tmdb-rating") !== "0");
+    setHideTmdbRating(localStorage.getItem("watch-pool:hide-tmdb-rating") === "1");
   }, []);
   function toggleHideTmdbRating() {
     setHideTmdbRating((prev) => {
@@ -274,9 +273,7 @@ export function WatchPool({
     <div className="watch-pool">
       <div className="wrap">
         <div className="bar">
-          <h1 className="mark">
-            Watch<i>·</i>Pool
-          </h1>
+          <h1 className="mark">A Few Good Films</h1>
           <span className="spacer" />
           <span className="who">
             <span>Signed in as {viewerName}</span>

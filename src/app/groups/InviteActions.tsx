@@ -29,8 +29,8 @@ export function InviteActions({ code, groupName }: { code: string; groupName: st
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Join ${groupName} on Watch·Pool`,
-          text: `Join ${groupName} on Watch·Pool`,
+          title: `Join ${groupName} on A Few Good Films`,
+          text: `Join ${groupName} on A Few Good Films`,
           url: link,
         });
       } catch {

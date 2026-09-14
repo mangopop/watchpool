@@ -38,7 +38,7 @@ const spectral = Spectral({
 });
 
 export const metadata: Metadata = {
-  title: "Watch Pool",
+  title: "A Few Good Films",
   description: "Recommend movies to your friends, with a reason why.",
 };
 
