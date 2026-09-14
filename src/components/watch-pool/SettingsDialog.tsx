@@ -12,10 +12,12 @@ export interface SettingsDialogHandle {
 interface SettingsDialogProps {
   state: PoolState;
   onToggleService: (serviceId: string) => void;
+  hideTmdbRating: boolean;
+  onToggleHideTmdbRating: () => void;
 }
 
 export const SettingsDialog = forwardRef<SettingsDialogHandle, SettingsDialogProps>(
-  function SettingsDialog({ state, onToggleService }, ref) {
+  function SettingsDialog({ state, onToggleService, hideTmdbRating, onToggleHideTmdbRating }, ref) {
     const dialogRef = useRef<HTMLDialogElement>(null);
 
     useImperativeHandle(ref, () => ({
@@ -46,6 +48,22 @@ export const SettingsDialog = forwardRef<SettingsDialogHandle, SettingsDialogPro
                 </button>
               ))}
             </div>
+          </div>
+          <div className="field">
+            <span className="step-label">Ratings</span>
+            <div className="toggle-row">
+              <button
+                type="button"
+                className="toggle"
+                aria-pressed={hideTmdbRating}
+                onClick={onToggleHideTmdbRating}
+              >
+                Hide TMDB score
+              </button>
+            </div>
+            <p className="hint">
+              Just this device — TMDB&rsquo;s own rating often reads very different from IMDb/RT
+            </p>
           </div>
           <div className="modal-actions">
             <button type="button" className="btn-solid" onClick={() => dialogRef.current?.close()}>

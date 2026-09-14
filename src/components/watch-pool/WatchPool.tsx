@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { addMovieAction, setMyServiceAction, setReactionAction, updateMovieAction } from "@/lib/watch-pool/actions";
 import {
   HOT_MAX_ITEMS,
@@ -52,6 +52,21 @@ export function WatchPool({
   const [tonight, setTonight] = useState<PoolState["tonight"]>(null);
   const [timeLimit, setTimeLimit] = useState(999);
   const [myServices, setMyServices] = useState<string[]>(initialServices);
+
+  // Per-device display preference, not group state — TMDB's own user score
+  // often reads wildly different from IMDb/RT, so it's opt-out only, not
+  // something worth a synced column.
+  const [hideTmdbRating, setHideTmdbRating] = useState(false);
+  useEffect(() => {
+    setHideTmdbRating(localStorage.getItem("watch-pool:hide-tmdb-rating") === "1");
+  }, []);
+  function toggleHideTmdbRating() {
+    setHideTmdbRating((prev) => {
+      const next = !prev;
+      localStorage.setItem("watch-pool:hide-tmdb-rating", next ? "1" : "0");
+      return next;
+    });
+  }
 
   const addRef = useRef<AddDialogHandle>(null);
   const tonightRef = useRef<TonightDialogHandle>(null);
@@ -394,6 +409,7 @@ export function WatchPool({
                 key={m.id}
                 state={state}
                 movie={m}
+                hideTmdbRating={hideTmdbRating}
                 onSetStatus={setStatus}
                 onSetRating={setRating}
                 onSetNote={setNote}
@@ -408,7 +424,13 @@ export function WatchPool({
 
       <AddDialog ref={addRef} onAdd={addMovie} />
       <TonightDialog ref={tonightRef} state={state} onSetTimeLimit={setTimeLimit} onLock={lockTonight} />
-      <SettingsDialog ref={settingsRef} state={state} onToggleService={toggleService} />
+      <SettingsDialog
+        ref={settingsRef}
+        state={state}
+        onToggleService={toggleService}
+        hideTmdbRating={hideTmdbRating}
+        onToggleHideTmdbRating={toggleHideTmdbRating}
+      />
     </div>
   );
 }

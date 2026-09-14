@@ -20,6 +20,7 @@ import type { Movie, PoolState, ReactionStatus, ReactionTier } from "@/lib/watch
 interface MovieCardProps {
   state: PoolState;
   movie: Movie;
+  hideTmdbRating: boolean;
   onSetStatus: (movieId: string, status: ReactionStatus) => void;
   onSetRating: (movieId: string, rating: ReactionTier) => void;
   onSetNote: (movieId: string, note: string) => void;
@@ -31,6 +32,7 @@ interface MovieCardProps {
 export function MovieCard({
   state,
   movie,
+  hideTmdbRating,
   onSetStatus,
   onSetRating,
   onSetNote,
@@ -116,7 +118,7 @@ export function MovieCard({
           <h3>
             {movie.title}
             {movie.releaseYear && <span className="year"> ({movie.releaseYear})</span>}
-            {movie.tmdbRating !== null && (
+            {!hideTmdbRating && movie.tmdbRating !== null && (
               <span className="rating" title="TMDB rating">
                 {" "}
                 ★ {movie.tmdbRating.toFixed(1)}
