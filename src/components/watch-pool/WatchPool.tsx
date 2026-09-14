@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRef, useState } from "react";
 import { addMovieAction, setMyServiceAction, setReactionAction, updateMovieAction } from "@/lib/watch-pool/actions";
 import {
@@ -247,6 +248,9 @@ export function WatchPool({
               </button>
             </form>
           </span>
+          <Link href="/groups" className="icon-btn" title="Manage group & invites" aria-label="Manage group & invites">
+            👥
+          </Link>
           <button
             className="icon-btn"
             title="Your streaming services"

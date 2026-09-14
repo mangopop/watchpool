@@ -59,6 +59,12 @@ export default async function GroupsPage({
         <h1 className="mark">Your groups</h1>
         <p className="lede">An invite joins one group, never the whole app</p>
 
+        {rows.length > 0 && (
+          <Link href="/" className="btn-ghost" style={{ textAlign: "center", textDecoration: "none" }}>
+            ← Back to your pool
+          </Link>
+        )}
+
         {error && <div className="error">{error}</div>}
 
         {rows.length > 0 && (
@@ -95,9 +101,6 @@ export default async function GroupsPage({
                 </div>
               );
             })}
-            <Link href="/" className="btn-solid" style={{ textAlign: "center", textDecoration: "none" }}>
-              Go to your pool →
-            </Link>
           </div>
         )}
 

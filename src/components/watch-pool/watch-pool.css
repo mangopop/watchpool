@@ -153,6 +153,9 @@
   border-color: var(--amber);
 }
 .watch-pool .icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: transparent;
   border: 1px solid var(--rail);
   color: var(--dust);
@@ -162,6 +165,7 @@
   cursor: pointer;
   font-size: 14px;
   line-height: 1;
+  text-decoration: none;
 }
 .watch-pool .icon-btn:hover {
   color: var(--bone);
