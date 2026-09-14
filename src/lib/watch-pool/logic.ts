@@ -123,7 +123,7 @@ export function hotCandidates(state: PoolState): HotCandidate[] {
     .map((movie): HotCandidate | null => {
       const t = tallyFor(state, movie);
       const missing = t.total - t.watched - t.skip;
-      if (missing > 1) return null;
+      if (t.total > 0 && missing / t.total > 0.4) return null;
       if (t.watched < 2) return null;
       if (t.approval <= 0) return null;
       if (myReaction(movie, state.currentFriend).status === "watched") return null;

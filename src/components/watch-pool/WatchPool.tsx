@@ -50,7 +50,7 @@ export function WatchPool({
   const [movies, setMovies] = useState<Movie[]>(initialMovies);
   const [filter, setFilter] = useState("all");
   const [tonight, setTonight] = useState<PoolState["tonight"]>(null);
-  const [timeLimit, setTimeLimit] = useState(120);
+  const [timeLimit, setTimeLimit] = useState(999);
   const [myServices, setMyServices] = useState<string[]>(initialServices);
 
   const addRef = useRef<AddDialogHandle>(null);

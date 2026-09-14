@@ -66,12 +66,6 @@ export function MovieCard({
       </>
     );
 
-  const pitchedBy = movie.recommendedBy === state.currentFriend ? (
-    <b className="yours">You</b>
-  ) : (
-    <b>{friendName(state.friends, movie.recommendedBy)}</b>
-  );
-
   let revive: React.ReactNode = null;
   if (ret && ret.bucket === "ignored") {
     revive =
@@ -147,17 +141,14 @@ export function MovieCard({
               movie.tmdbId && (
                 // A real TMDB match with no providers — genuinely not on any
                 // tracked service right now, not a missing-data gap.
-                <span className="flag where">Not on your tracked services</span>
+                <span className="flag where">N/A</span>
               )
             )}
           </div>
         )}
       </div>
 
-      <p className="pitch">
-        {movie.pitch}
-        <cite>— {pitchedBy}</cite>
-      </p>
+      <p className="pitch">{movie.pitch}</p>
 
       {movie.plea && (
         <p className="defence">
