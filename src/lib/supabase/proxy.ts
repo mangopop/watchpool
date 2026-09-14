@@ -1,4 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
+import { isAuthRetryableFetchError } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 
 // Public routes: reachable without a session. Everything else redirects to
@@ -40,9 +41,18 @@ export async function updateSession(request: NextRequest) {
   // remove this even though the return value isn't used elsewhere.
   const {
     data: { user },
+    error,
   } = await supabase.auth.getUser();
 
   const { pathname, search } = request.nextUrl;
+
+  // A phone backgrounded/foregrounded (or switching wifi/cellular) can hand
+  // this a transient network failure mid-refresh — that's not "logged out",
+  // just "couldn't check right now". Don't redirect to /login on those, or
+  // every reconnect looks like a forced sign-out; let the next request retry.
+  if (error && isAuthRetryableFetchError(error)) {
+    return response;
+  }
 
   if (!user && !isPublicPath(pathname)) {
     const url = request.nextUrl.clone();
