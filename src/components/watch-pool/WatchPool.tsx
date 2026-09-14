@@ -214,6 +214,7 @@ export function WatchPool({
           posterPath: row.poster_path ?? null,
           releaseYear: row.release_year ?? null,
           tmdbRating: row.tmdb_rating ?? null,
+          genres: row.genres ?? [],
         },
         ...s,
       ]);

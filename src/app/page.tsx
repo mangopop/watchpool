@@ -97,6 +97,7 @@ export default async function Home() {
     posterPath: m.poster_path ?? null,
     releaseYear: m.release_year ?? null,
     tmdbRating: m.tmdb_rating ?? null,
+    genres: m.genres ?? [],
     reactions: Object.fromEntries(
       (reactionRows ?? [])
         .filter((r) => r.movie_id === m.id)

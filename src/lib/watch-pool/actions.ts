@@ -56,6 +56,7 @@ export async function addMovieAction(
       release_year: details?.releaseYear ?? null,
       runtime_minutes: details?.runtime ?? null,
       tmdb_rating: details?.voteAverage ?? null,
+      genres: details?.genres ?? [],
       // A manual entry with no TMDB match can't be identified — defaults to
       // "movie" the same way it always has.
       media_type: details ? mediaType : "movie",

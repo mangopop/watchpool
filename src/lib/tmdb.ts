@@ -15,6 +15,8 @@ export interface TmdbMovieDetails extends TmdbSearchResult {
   // second API (OMDb), which TODO.md's "Open decisions" already ruled out
   // adding just for one field once TMDB covers metadata + providers alone.
   voteAverage: number | null;
+  // TMDB genre names, e.g. ["Comedy", "Thriller"].
+  genres: string[];
 }
 
 function apiKey(): string {
@@ -114,5 +116,8 @@ export async function getMovieDetails(tmdbId: number, mediaType: TmdbMediaType):
       mediaType === "movie" && typeof data.runtime === "number" && data.runtime > 0 ? data.runtime : null,
     voteAverage:
       typeof data.vote_average === "number" && data.vote_count > 0 ? data.vote_average : null,
+    genres: Array.isArray(data.genres)
+      ? data.genres.map((g: { name: string }) => g.name).filter(Boolean)
+      : [],
   };
 }
