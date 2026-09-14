@@ -89,6 +89,10 @@ export interface Database {
           revived: boolean;
           plea: string | null;
           bumped_by: string | null;
+          tmdb_id: number | null;
+          poster_path: string | null;
+          release_year: number | null;
+          runtime_minutes: number | null;
         };
         Insert: {
           id?: string;
@@ -100,6 +104,10 @@ export interface Database {
           revived?: boolean;
           plea?: string | null;
           bumped_by?: string | null;
+          tmdb_id?: number | null;
+          poster_path?: string | null;
+          release_year?: number | null;
+          runtime_minutes?: number | null;
         };
         Update: {
           title?: string;
@@ -107,6 +115,10 @@ export interface Database {
           revived?: boolean;
           plea?: string | null;
           bumped_by?: string | null;
+          tmdb_id?: number | null;
+          poster_path?: string | null;
+          release_year?: number | null;
+          runtime_minutes?: number | null;
         };
         Relationships: [];
       };

@@ -63,16 +63,19 @@ export default async function Home() {
       ? await supabase.from("reactions").select("*").in("movie_id", movieIds)
       : { data: [] };
 
-  // runtime/providers are stand-in values until TMDB integration (Phase 2) —
-  // the schema has no columns for them yet.
+  // providers are still a stand-in value until Phase 3 wires up TMDB
+  // /watch/providers — runtime/poster/year are real as of Phase 2.
   const movies: Movie[] = (movieRows ?? []).map((m) => ({
     id: m.id,
     title: m.title,
     recommendedBy: m.recommended_by,
-    runtime: 110,
+    runtime: m.runtime_minutes ?? null,
     providers: ["prime"],
     pitch: m.pitch,
     dateAdded: m.date_added,
+    tmdbId: m.tmdb_id ?? null,
+    posterPath: m.poster_path ?? null,
+    releaseYear: m.release_year ?? null,
     reactions: Object.fromEntries(
       (reactionRows ?? [])
         .filter((r) => r.movie_id === m.id)

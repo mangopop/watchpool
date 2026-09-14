@@ -545,6 +545,19 @@
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.5);
 }
+.watch-pool .poster img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.watch-pool .card h3 .year {
+  font-weight: 500;
+  text-transform: none;
+  opacity: 0.6;
+  font-size: 0.6em;
+}
 .watch-pool .card h3 {
   font-family: var(--font-big-shoulders-display), sans-serif;
   font-weight: 800;
@@ -946,6 +959,46 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--dust);
+}
+.watch-pool .search-results {
+  list-style: none;
+  margin: -3px 0 0;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 220px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--rail);
+  border-radius: 8px;
+}
+.watch-pool .search-results button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 8px;
+  background: transparent;
+  border: none;
+  border-radius: 5px;
+  color: var(--bone);
+  font-family: var(--font-work-sans), sans-serif;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.watch-pool .search-results button:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.watch-pool .search-results img,
+.watch-pool .search-results .no-poster {
+  flex: 0 0 auto;
+  width: 28px;
+  aspect-ratio: 2 / 3;
+  border-radius: 3px;
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.08);
 }
 .watch-pool .modal-actions {
   display: flex;

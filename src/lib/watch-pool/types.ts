@@ -24,7 +24,7 @@ export interface Movie {
   id: string;
   title: string;
   recommendedBy: FriendId;
-  runtime: number;
+  runtime: number | null;
   providers: string[];
   pitch: string;
   dateAdded: string;
@@ -32,6 +32,9 @@ export interface Movie {
   plea?: string;
   revived?: boolean;
   bumpedBy?: FriendId;
+  tmdbId: number | null;
+  posterPath: string | null;
+  releaseYear: number | null;
 }
 
 export interface Tonight {

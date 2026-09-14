@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { REACTIONS, TIER_ICON } from "@/lib/watch-pool/constants";
+import { TMDB_POSTER_BASE } from "@/lib/tmdb-shared";
 import {
   daysAgoLabel,
   friendName,
@@ -108,11 +109,20 @@ export function MovieCard({
     <article className={`card${ret ? " ghosted" : ""}`}>
       <div className="card-top">
         <span className="poster" style={{ background: posterGradient(movie.title) }}>
-          <i />
-          <b>{initials(movie.title)}</b>
+          {movie.posterPath ? (
+            <img src={`${TMDB_POSTER_BASE}${movie.posterPath}`} alt="" />
+          ) : (
+            <>
+              <i />
+              <b>{initials(movie.title)}</b>
+            </>
+          )}
         </span>
         <div>
-          <h3>{movie.title}</h3>
+          <h3>
+            {movie.title}
+            {movie.releaseYear && <span className="year"> ({movie.releaseYear})</span>}
+          </h3>
           <div className="by">{byline}</div>
         </div>
       </div>

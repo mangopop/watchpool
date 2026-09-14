@@ -1,14 +1,16 @@
 "use client";
 
 import { useRef } from "react";
-import { useImperativeHandle, forwardRef, useState } from "react";
+import { useImperativeHandle, forwardRef, useState, useEffect } from "react";
+import { TMDB_POSTER_BASE } from "@/lib/tmdb-shared";
+import type { TmdbSearchResult } from "@/lib/tmdb-shared";
 
 export interface AddDialogHandle {
   open: () => void;
 }
 
 interface AddDialogProps {
-  onAdd: (title: string, pitch: string) => void;
+  onAdd: (title: string, pitch: string, tmdbId: number | null) => void;
 }
 
 export const AddDialog = forwardRef<AddDialogHandle, AddDialogProps>(function AddDialog(
@@ -19,15 +21,59 @@ export const AddDialog = forwardRef<AddDialogHandle, AddDialogProps>(function Ad
   const titleRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState("");
   const [pitch, setPitch] = useState("");
+  const [results, setResults] = useState<TmdbSearchResult[]>([]);
+  const [selected, setSelected] = useState<TmdbSearchResult | null>(null);
+  const [searching, setSearching] = useState(false);
+  const [searchFailed, setSearchFailed] = useState(false);
 
   useImperativeHandle(ref, () => ({
     open: () => {
       setTitle("");
       setPitch("");
+      setResults([]);
+      setSelected(null);
+      setSearchFailed(false);
       dialogRef.current?.showModal();
       titleRef.current?.focus();
     },
   }));
+
+  useEffect(() => {
+    const query = title.trim();
+    // Once a result's been picked, further typing without re-picking means
+    // the user's editing away from it — fall back to a manual title.
+    if (selected && selected.title === title) return;
+    if (selected) setSelected(null);
+    if (query.length < 2) {
+      setResults([]);
+      setSearchFailed(false);
+      return;
+    }
+    setSearching(true);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/tmdb/search?q=${encodeURIComponent(query)}`);
+        if (!res.ok) throw new Error("search failed");
+        const data = await res.json();
+        setResults(data.results ?? []);
+        setSearchFailed(false);
+      } catch {
+        setResults([]);
+        setSearchFailed(true);
+      } finally {
+        setSearching(false);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [title]);
+
+  function pick(result: TmdbSearchResult) {
+    setSelected(result);
+    setTitle(result.title);
+    setResults([]);
+    setSearchFailed(false);
+  }
 
   return (
     <dialog ref={dialogRef}>
@@ -38,7 +84,7 @@ export const AddDialog = forwardRef<AddDialogHandle, AddDialogProps>(function Ad
           const t = title.trim();
           const p = pitch.trim();
           if (!t || !p) return;
-          onAdd(t, p);
+          onAdd(t, p, selected?.title === t ? selected.tmdbId : null);
           dialogRef.current?.close();
         }}
       >
@@ -50,10 +96,38 @@ export const AddDialog = forwardRef<AddDialogHandle, AddDialogProps>(function Ad
             ref={titleRef}
             required
             maxLength={80}
+            autoComplete="off"
             placeholder="e.g. Paddington 2"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
+          {searching && <span className="hint">Searching…</span>}
+          {results.length > 0 && (
+            <ul className="search-results">
+              {results.map((r) => (
+                <li key={r.tmdbId}>
+                  <button type="button" onClick={() => pick(r)}>
+                    {r.posterPath ? (
+                      <img src={`${TMDB_POSTER_BASE}${r.posterPath}`} alt="" />
+                    ) : (
+                      <span className="no-poster" />
+                    )}
+                    <span>
+                      {r.title}
+                      {r.releaseYear ? ` (${r.releaseYear})` : ""}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          {!selected && title.trim().length >= 2 && results.length === 0 && !searching && (
+            <span className="hint">
+              {searchFailed
+                ? "TMDB search unavailable right now — will be added with a placeholder poster"
+                : "No TMDB match — will be added with a placeholder poster"}
+            </span>
+          )}
         </div>
         <div className="field">
           <label htmlFor="pitchInput">Why should the group watch it?</label>

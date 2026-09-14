@@ -38,7 +38,8 @@ export function initials(title: string): string {
   return words.length === 1 ? words[0].slice(0, 2) : words[0][0] + words[1][0];
 }
 
-export function runtimeLabel(mins: number): string {
+export function runtimeLabel(mins: number | null): string {
+  if (mins === null) return "runtime unknown";
   return `${Math.floor(mins / 60)}h${String(mins % 60).padStart(2, "0")}`;
 }
 
@@ -215,7 +216,9 @@ export function tonightPicks(state: PoolState): TonightResult {
       out.noStream++;
       continue;
     }
-    if (movie.runtime > state.timeLimit) {
+    // Unknown runtime (manual entry, no TMDB match) shouldn't silently drop
+    // a title from the running — only exclude when we actually know it's too long.
+    if (movie.runtime !== null && movie.runtime > state.timeLimit) {
       out.tooLong++;
       continue;
     }
@@ -229,7 +232,9 @@ export function tonightPicks(state: PoolState): TonightResult {
     });
   }
   // group-endorsed first, best-rated on top; unrated pitches fall to the bottom
-  out.picks.sort((a, b) => b.rank - a.rank || a.movie.runtime - b.movie.runtime);
+  out.picks.sort(
+    (a, b) => b.rank - a.rank || (a.movie.runtime ?? Infinity) - (b.movie.runtime ?? Infinity),
+  );
   return out;
 }
 

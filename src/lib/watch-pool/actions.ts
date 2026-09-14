@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { getMovieDetails } from "@/lib/tmdb";
 import type { ReactionStatus, ReactionTier } from "./types";
 
 async function requireUser() {
@@ -13,11 +14,30 @@ async function requireUser() {
   return { supabase, user };
 }
 
-export async function addMovieAction(groupId: string, title: string, pitch: string) {
+export async function addMovieAction(
+  groupId: string,
+  title: string,
+  pitch: string,
+  tmdbId: number | null,
+) {
   const { supabase, user } = await requireUser();
+
+  // Search results carry no runtime — look it up now, at the point the pick
+  // is actually confirmed, rather than on every keystroke of the search box.
+  const details = tmdbId ? await getMovieDetails(tmdbId).catch(() => null) : null;
+
   const { data, error } = await supabase
     .from("movies")
-    .insert({ group_id: groupId, title, pitch, recommended_by: user.id })
+    .insert({
+      group_id: groupId,
+      title,
+      pitch,
+      recommended_by: user.id,
+      tmdb_id: details?.tmdbId ?? null,
+      poster_path: details?.posterPath ?? null,
+      release_year: details?.releaseYear ?? null,
+      runtime_minutes: details?.runtime ?? null,
+    })
     .select()
     .single();
   if (error) throw new Error(error.message);

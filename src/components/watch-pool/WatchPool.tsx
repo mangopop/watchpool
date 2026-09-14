@@ -150,19 +150,22 @@ export function WatchPool({
     }
   }
 
-  async function addMovie(title: string, pitch: string) {
+  async function addMovie(title: string, pitch: string, tmdbId: number | null) {
     try {
-      const row = await addMovieAction(groupId, title, pitch);
+      const row = await addMovieAction(groupId, title, pitch, tmdbId);
       setMovies((s) => [
         {
           id: row.id,
           title: row.title,
           recommendedBy: row.recommended_by,
-          runtime: 110,
+          runtime: row.runtime_minutes ?? null,
           providers: ["prime"],
           pitch: row.pitch,
           dateAdded: row.date_added,
           reactions: {},
+          tmdbId: row.tmdb_id ?? null,
+          posterPath: row.poster_path ?? null,
+          releaseYear: row.release_year ?? null,
         },
         ...s,
       ]);

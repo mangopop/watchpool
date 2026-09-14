@@ -92,10 +92,13 @@ Phase 1 is done. Deploy moved to the end of Phase 3 — not going out to
 friends' phones until it's been exercised locally end-to-end, including
 the streaming-providers/decide-for-me chain.
 
-### Phase 2 — TMDB integration
-- [ ] Title search/autocomplete on add, replacing manual entry
-- [ ] Real poster art, runtime, release year pulled from TMDB
-- [ ] Keep the duotone-placeholder poster as the fallback when TMDB has no
+### Phase 2 — TMDB integration (done)
+- [x] Title search/autocomplete on add, replacing manual entry
+      (`/api/tmdb/search`, `src/lib/tmdb.ts`)
+- [x] Real poster art, runtime, release year pulled from TMDB — runtime is
+      fetched at confirm time (search results don't carry it), stored on
+      `movies` (`supabase/migrations/20260914010000_tmdb_fields.sql`)
+- [x] Keep the duotone-placeholder poster as the fallback when TMDB has no
       match (manual entries, obscure titles)
 
 ### Phase 3 — Decide for me + streaming providers

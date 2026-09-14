@@ -21,7 +21,10 @@ free tier.
 3. **Enable email (magic link) auth**: Authentication → Providers → Email,
    with "Confirm email" using the magic-link flow (no password).
 4. **Copy env vars**: `cp .env.local.example .env.local`, then fill in the
-   Project URL and anon key from Project Settings → API.
+   Project URL and anon key from Project Settings → API, plus a TMDB v3 API
+   key from [themoviedb.org](https://www.themoviedb.org/settings/api)
+   (account settings → API) — needed for title search and poster/runtime
+   lookup.
 5. `pn install`
 6. `pn run dev` — [localhost:3000](http://localhost:3000)
 
@@ -40,11 +43,14 @@ free tier.
   `proxy.ts`); `/` additionally requires group membership
 - ✅ The pool UI — ported from the design POC (Projection Room: warm
   charcoal, projector amber, ticket-stub cards, the What's Hot hero,
-  Decide for me, per-pair affinity, retirement). Still running on the
-  POC's mock friend group and `localStorage`, not yet wired to
-  Supabase/auth — see `src/components/watch-pool/` and
-  `src/lib/watch-pool/`
-- ⬜ TMDB integration (Phase 2 in `TODO.md`)
+  Decide for me, per-pair affinity, retirement), backed by Supabase —
+  see `src/components/watch-pool/` and `src/lib/watch-pool/`
+- ✅ TMDB integration — title search/autocomplete on add, with real poster
+  art, runtime, and release year; falls back to the duotone placeholder
+  poster for manual entries with no TMDB match (`src/lib/tmdb.ts`,
+  `/api/tmdb/search`)
+- ⬜ Streaming providers / Decide for me filter chain (Phase 3 in
+  `TODO.md`)
 
 ## Notes on the schema
 
