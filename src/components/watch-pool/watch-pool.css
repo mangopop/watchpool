@@ -488,7 +488,7 @@
 .watch-pool .card {
   position: relative;
   background: var(--stub);
-  border: 1px solid var(--rail);
+  border: 1px solid rgba(240, 233, 216, 0.18);
   border-radius: 12px;
   padding: 15px 15px 13px 23px;
   display: flex;
