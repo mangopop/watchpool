@@ -45,6 +45,7 @@ export function MovieCard({
   const [pleaText, setPleaText] = useState("");
   const [trailerHover, setTrailerHover] = useState(false);
   const trailerTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const trailerFrame = useRef<HTMLIFrameElement>(null);
 
   function startTrailerHover() {
     if (!movie.trailerKey) return;
@@ -53,6 +54,16 @@ export function MovieCard({
   function stopTrailerHover() {
     if (trailerTimer.current) clearTimeout(trailerTimer.current);
     setTrailerHover(false);
+  }
+  function unmuteTrailer() {
+    // Browsers only allow autoplay when it starts muted (mute=1 in the
+    // embed URL) — unmuting it a beat later via the player API is the
+    // standard workaround, and works here without a click because the
+    // video is already playing by the time this fires.
+    trailerFrame.current?.contentWindow?.postMessage(
+      JSON.stringify({ event: "command", func: "unMute", args: [] }),
+      "*",
+    );
   }
 
   const t = tallyFor(state, movie);
@@ -118,30 +129,32 @@ export function MovieCard({
   return (
     <article className={`card${ret ? " ghosted" : ""}`}>
       <div className="card-top">
-        <span
-          className={`poster${trailerHover ? " trailer-playing" : ""}`}
-          style={{ background: posterGradient(movie.title) }}
-          onMouseEnter={startTrailerHover}
-          onMouseLeave={stopTrailerHover}
-        >
-          {trailerHover && movie.trailerKey ? (
-            <iframe
-              src={`https://www.youtube.com/embed/${movie.trailerKey}?autoplay=1&mute=1&controls=0&modestbranding=1&playsinline=1`}
-              title={`${movie.title} trailer`}
-              allow="autoplay; encrypted-media"
-              frameBorder={0}
-            />
-          ) : movie.posterPath ? (
-            <img src={`${TMDB_POSTER_BASE}${movie.posterPath}`} alt="" />
-          ) : (
-            <>
-              <i />
-              <b>{initials(movie.title)}</b>
-            </>
-          )}
-          {movie.trailerKey && !trailerHover && (
-            <span className="play-badge" aria-hidden="true">
-              ▶
+        <span className="poster-wrap" onMouseEnter={startTrailerHover} onMouseLeave={stopTrailerHover}>
+          <span className="poster" style={{ background: posterGradient(movie.title) }}>
+            {movie.posterPath ? (
+              <img src={`${TMDB_POSTER_BASE}${movie.posterPath}`} alt="" />
+            ) : (
+              <>
+                <i />
+                <b>{initials(movie.title)}</b>
+              </>
+            )}
+            {movie.trailerKey && (
+              <span className="play-badge" aria-hidden="true">
+                ▶
+              </span>
+            )}
+          </span>
+          {trailerHover && movie.trailerKey && (
+            <span className="trailer-popover">
+              <iframe
+                ref={trailerFrame}
+                src={`https://www.youtube.com/embed/${movie.trailerKey}?autoplay=1&mute=1&controls=0&modestbranding=1&playsinline=1&enablejsapi=1`}
+                title={`${movie.title} trailer`}
+                allow="autoplay; encrypted-media"
+                frameBorder={0}
+                onLoad={() => setTimeout(unmuteTrailer, 400)}
+              />
             </span>
           )}
         </span>
