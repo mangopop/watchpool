@@ -125,23 +125,23 @@ export function MovieCard({
           </h3>
           <div className="by">{byline}</div>
         </div>
-      </div>
 
-      {(divisive || ret || movie.providers.length > 0) && (
-        <div className="flags">
-          {divisive && <span className="flag divisive">Most divisive</span>}
-          {ret && (
-            <span className="flag archived">
-              {ret.bucket === "panned" ? "Panned" : "Ignored"} · {ret.why}
-            </span>
-          )}
-          {movie.providers.length > 0 && (
-            <span className="flag where">
-              {serviceName(movie.providers[0])} · {runtimeLabel(movie.runtime)}
-            </span>
-          )}
-        </div>
-      )}
+        {(divisive || ret || movie.providers.length > 0) && (
+          <div className="flags">
+            {divisive && <span className="flag divisive">Most divisive</span>}
+            {ret && (
+              <span className="flag archived">
+                {ret.bucket === "panned" ? "Panned" : "Ignored"} · {ret.why}
+              </span>
+            )}
+            {movie.providers.length > 0 && (
+              <span className="flag where">
+                {serviceName(movie.providers[0])} · {runtimeLabel(movie.runtime)}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
 
       <p className="pitch">
         {movie.pitch}
