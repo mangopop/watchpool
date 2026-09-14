@@ -28,6 +28,32 @@ free tier.
 5. `pn install`
 6. `pn run dev` — [localhost:3000](http://localhost:3000)
 
+## Common commands
+
+App:
+
+- `pn run dev` — dev server at [localhost:3000](http://localhost:3000)
+- `pn run build` / `pn run start` — production build and serve
+- `pn run lint` — ESLint
+- `pn run typecheck` — `tsc --noEmit`
+
+Supabase, if you're running the local stack (CLI, `.env.local` pointed at
+`127.0.0.1:54321`) rather than a hosted project:
+
+- `supabase start` / `supabase stop` — spin the local stack up/down
+  (Postgres, Auth, Studio, ...)
+- `supabase status` — show local URLs/keys, including Studio at
+  [localhost:54323](http://localhost:54323)
+- `supabase migration up` — apply any `supabase/migrations/*.sql` files not
+  yet run against the local DB (do this after pulling new migrations)
+- `supabase db reset` — rebuild the local DB from scratch (every migration,
+  replayed in order) — **destructive**, wipes local data
+- `supabase db push` — apply pending migrations to a *linked remote*
+  project. Only run this deliberately against production; `supabase
+  status`'s `linked_project` shows what you're currently linked to
+- `supabase migration new <name>` — scaffold a new timestamped migration
+  file in `supabase/migrations/`
+
 ## What's here vs. not yet
 
 - ✅ Next.js + TypeScript + Tailwind scaffold

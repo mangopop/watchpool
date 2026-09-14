@@ -3,7 +3,13 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { TmdbMediaType } from "@/lib/tmdb-shared";
-import { addMovieAction, setMyServiceAction, setReactionAction, updateMovieAction } from "@/lib/watch-pool/actions";
+import {
+  addMovieAction,
+  deleteMovieAction,
+  setMyServiceAction,
+  setReactionAction,
+  updateMovieAction,
+} from "@/lib/watch-pool/actions";
 import {
   HOT_MAX_ITEMS,
   affinity,
@@ -194,6 +200,17 @@ export function WatchPool({
         ...s,
       ]);
     } catch {
+      reportError();
+    }
+  }
+
+  async function deleteMovie(movieId: string) {
+    const prev = movies;
+    setMovies((s) => s.filter((m) => m.id !== movieId));
+    try {
+      await deleteMovieAction(movieId);
+    } catch {
+      setMovies(prev);
       reportError();
     }
   }
@@ -437,6 +454,7 @@ export function WatchPool({
                 onDismissNote={dismissNote}
                 onPlea={submitPlea}
                 onBump={bumpBack}
+                onDelete={deleteMovie}
               />
             ))
           )}

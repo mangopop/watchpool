@@ -27,6 +27,7 @@ interface MovieCardProps {
   onDismissNote: (movieId: string) => void;
   onPlea: (movieId: string, plea: string) => void;
   onBump: (movieId: string) => void;
+  onDelete: (movieId: string) => void;
 }
 
 export function MovieCard({
@@ -39,6 +40,7 @@ export function MovieCard({
   onDismissNote,
   onPlea,
   onBump,
+  onDelete,
 }: MovieCardProps) {
   const [pleaText, setPleaText] = useState("");
   const t = tallyFor(state, movie);
@@ -180,6 +182,21 @@ export function MovieCard({
               </span>
             ))}
           </span>
+        )}
+        {movie.recommendedBy === state.currentFriend && (
+          <button
+            type="button"
+            className="delete-btn"
+            title="Remove this suggestion"
+            aria-label="Remove this suggestion"
+            onClick={() => {
+              if (confirm(`Remove "${movie.title}" from the pool? This can't be undone.`)) {
+                onDelete(movie.id);
+              }
+            }}
+          >
+            Remove
+          </button>
         )}
       </div>
 

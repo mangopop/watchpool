@@ -97,6 +97,14 @@ export async function setReactionAction(
   revalidatePath("/");
 }
 
+export async function deleteMovieAction(movieId: string) {
+  const { supabase } = await requireUser();
+  const { error } = await supabase.from("movies").delete().eq("id", movieId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/");
+}
+
 export async function updateMovieAction(
   movieId: string,
   patch: { revived?: boolean; plea?: string; bumped_by?: string },
