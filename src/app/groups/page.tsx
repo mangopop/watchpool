@@ -23,6 +23,13 @@ export default async function GroupsPage({
 
   const { error, code } = await searchParams;
 
+  if (code) {
+    const { error: joinError } = await supabase.rpc("join_group", { invite_code: code });
+    redirect(
+      joinError ? `/groups?error=${encodeURIComponent(joinError.message)}` : "/groups",
+    );
+  }
+
   const { data: memberships } = await supabase
     .from("group_members")
     .select("group_id, role")
