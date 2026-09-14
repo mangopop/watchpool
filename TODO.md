@@ -67,16 +67,18 @@ Clickable artifact, mock data, localStorage only. Validated: hero rules,
 four-tier reactions, decide-for-me chain, retirement, attribution.
 
 ### Phase 1 — Real repo, no external APIs yet
-- [ ] `git init`, pick stack (see Open Decisions)
-- [ ] Schema is multi-tenant from day one: `groups`, `group_members`,
+- [x] `git init`, pick stack (see Open Decisions)
+- [x] Schema is multi-tenant from day one: `groups`, `group_members`,
       `group_id` on movies/reactions. Every table, every query, every RLS
       policy scoped to "groups I'm a member of" — retrofitting this once a
       group has real data is the thing to avoid
-- [ ] Auth (see Open Decisions) — invite-only per group (an invite joins one
-      group, not the whole app)
+- [x] Auth (see Open Decisions) — invite-only per group (an invite joins one
+      group, not the whole app). Magic-link sign-in/out is live
+      (`src/app/login/`, `src/app/auth/`)
 - [ ] Real database replacing localStorage
-- [ ] A "create a group" / "join via invite" flow — you're the first admin,
+- [x] A "create a group" / "join via invite" flow — you're the first admin,
       but any group can bootstrap itself without you touching the database
+      (`src/app/groups/`)
 - [x] Pool view, add-recommendation flow, status toggles, reactions —
       functionally identical to the POC, still manual title entry. Ported
       to React (`src/components/watch-pool/`), still running on the POC's

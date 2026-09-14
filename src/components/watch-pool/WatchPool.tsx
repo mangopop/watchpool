@@ -30,7 +30,13 @@ const FILTERS: { id: string; label: string }[] = [
   { id: "panned", label: "Panned" },
 ];
 
-export function WatchPool() {
+export function WatchPool({
+  viewerName,
+  onSignOut,
+}: {
+  viewerName?: string;
+  onSignOut?: () => Promise<void>;
+}) {
   const [state, setState] = useState<PoolState>(() => createInitialState());
   const [loaded, setLoaded] = useState(false);
 
@@ -222,6 +228,16 @@ export function WatchPool() {
             Watch<i>·</i>Pool
           </h1>
           <span className="spacer" />
+          {viewerName && onSignOut && (
+            <span className="who">
+              <span>Signed in as {viewerName}</span>
+              <form action={onSignOut}>
+                <button type="submit" className="icon-btn" title="Sign out" aria-label="Sign out">
+                  ⏻
+                </button>
+              </form>
+            </span>
+          )}
           <span className="who">
             <span>Viewing as</span>
             <select

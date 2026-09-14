@@ -22,6 +22,7 @@ export interface Database {
         Update: {
           display_name?: string;
         };
+        Relationships: [];
       };
       groups: {
         Row: {
@@ -39,6 +40,7 @@ export interface Database {
         Update: {
           name?: string;
         };
+        Relationships: [];
       };
       group_members: {
         Row: {
@@ -56,6 +58,7 @@ export interface Database {
         Update: {
           role?: "admin" | "member";
         };
+        Relationships: [];
       };
       group_invites: {
         Row: {
@@ -72,7 +75,8 @@ export interface Database {
           created_at?: string;
           expires_at?: string | null;
         };
-        Update: never;
+        Update: Record<string, never>;
+        Relationships: [];
       };
       movies: {
         Row: {
@@ -104,6 +108,7 @@ export interface Database {
           plea?: string | null;
           bumped_by?: string | null;
         };
+        Relationships: [];
       };
       reactions: {
         Row: {
@@ -131,6 +136,18 @@ export interface Database {
           note_dismissed?: boolean;
           updated_at?: string;
         };
+        Relationships: [];
+      };
+    };
+    Views: Record<string, never>;
+    Functions: {
+      create_group: {
+        Args: { group_name: string };
+        Returns: Database["public"]["Tables"]["groups"]["Row"];
+      };
+      join_group: {
+        Args: { invite_code: string };
+        Returns: Database["public"]["Tables"]["groups"]["Row"];
       };
     };
   };

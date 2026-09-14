@@ -22,8 +22,8 @@ free tier.
    with "Confirm email" using the magic-link flow (no password).
 4. **Copy env vars**: `cp .env.local.example .env.local`, then fill in the
    Project URL and anon key from Project Settings → API.
-5. `npm install`
-6. `npm run dev` — [localhost:3000](http://localhost:3000)
+5. `pn install`
+6. `pn run dev` — [localhost:3000](http://localhost:3000)
 
 ## What's here vs. not yet
 
@@ -34,7 +34,10 @@ free tier.
   `group_members`, `group_invites`, `movies`, `reactions`, plus
   `create_group` / `join_group` RPCs so membership is never granted outside
   a real invite
-- ⬜ Auth UI (magic-link sign-in page, create/join-group flow)
+- ✅ Auth UI — magic-link sign-in (`/login`, `/auth/confirm`), sign-out, and
+  a create/join-group flow (`/groups`) with invite-code generation. All
+  routes except `/login` and `/auth/*` require a session (enforced in
+  `proxy.ts`); `/` additionally requires group membership
 - ✅ The pool UI — ported from the design POC (Projection Room: warm
   charcoal, projector amber, ticket-stub cards, the What's Hot hero,
   Decide for me, per-pair affinity, retirement). Still running on the
