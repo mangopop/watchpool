@@ -23,9 +23,7 @@ export default async function LoginPage({
   return (
     <div className="auth-page">
       <div className="card">
-        <h1 className="mark">
-          Watch<i>·</i>Pool
-        </h1>
+        <h1 className="mark">A Few Good Films</h1>
         <p className="lede">Sign in with a magic link — no password to remember</p>
         {error && <div className="error">{error}</div>}
         <LoginForm next={safeNext(next)} />
