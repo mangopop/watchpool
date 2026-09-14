@@ -138,7 +138,9 @@ export function MovieCard({
               </span>
             )}
             {movie.providers.length > 0 ? (
-              <span className="flag where">{serviceName(movie.providers[0])}</span>
+              <span className={`flag where service-${movie.providers[0]}`}>
+                {serviceName(movie.providers[0])}
+              </span>
             ) : (
               movie.tmdbId && (
                 // A real TMDB match with no providers — genuinely not on any

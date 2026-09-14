@@ -640,6 +640,26 @@
   border-color: var(--rail-warm);
   color: var(--parch);
 }
+.watch-pool .flag.where.service-netflix {
+  border-color: #e50914;
+  color: #ff6b6f;
+  background: rgba(229, 9, 20, 0.14);
+}
+.watch-pool .flag.where.service-prime {
+  border-color: #00a8e1;
+  color: #6fd3f5;
+  background: rgba(0, 168, 225, 0.14);
+}
+.watch-pool .flag.where.service-disney {
+  border-color: #113ccf;
+  color: #8ea6ff;
+  background: rgba(17, 60, 207, 0.18);
+}
+.watch-pool .flag.where.service-iplayer {
+  border-color: #e6007e;
+  color: #ff7fc0;
+  background: rgba(230, 0, 126, 0.14);
+}
 .watch-pool .pitch {
   font-family: var(--font-spectral), serif;
   font-style: italic;
