@@ -295,25 +295,23 @@
 }
 .watch-pool .hero-art {
   position: absolute;
-  top: 50%;
+  top: 0;
   right: 0;
   height: 100%;
-  width: auto;
-  max-width: 75%;
-  object-fit: contain;
+  width: 25%;
+  object-fit: cover;
   object-position: right center;
   opacity: 0.5;
   -webkit-mask-image: linear-gradient(to left, black 0%, transparent 100%);
   mask-image: linear-gradient(to left, black 0%, transparent 100%);
   pointer-events: none;
-  /* Vertically centered, then zoomed in slightly anchored to the right
-     edge — scales toward the left so the right side of the poster is
-     never the part that's cropped. */
-  transform: translateY(-50%) scale(1.1);
+  /* Fills a fixed 25%-wide band on the right edge; scaled up further so
+     the crop reads as a zoomed-in detail rather than a shrunk poster. */
+  transform: scale(1.12);
   transform-origin: right center;
 }
 .watch-pool .hero-art-fallback {
-  width: 75%;
+  width: 25%;
   -webkit-mask-image: linear-gradient(to left, black 0%, transparent 100%);
   mask-image: linear-gradient(to left, black 0%, transparent 100%);
   opacity: 0.5;
