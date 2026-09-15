@@ -543,6 +543,7 @@
 }
 .watch-pool .card {
   position: relative;
+  z-index: 0;
   background: var(--stub);
   border: 1px solid rgba(240, 233, 216, 0.18);
   border-radius: 12px;
@@ -551,6 +552,13 @@
   flex-direction: column;
   gap: 11px;
   transition: border-color 0.16s ease, transform 0.16s ease;
+}
+.watch-pool .card.trailer-open {
+  /* The card's z-index:0 alone doesn't form a stacking context above
+     sibling cards (position:relative needs a non-auto z-index to do
+     that) — bump it while the trailer popover is open so the video
+     isn't painted under cards later in the grid. */
+  z-index: 30;
 }
 .watch-pool .card:hover {
   border-color: var(--rail-warm);
@@ -643,8 +651,7 @@
   top: 0;
   left: 0;
   z-index: 20;
-  width: 288px;
-  max-width: min(288px, 80vw);
+  width: min(480px, 92vw);
   aspect-ratio: 16 / 9;
   border-radius: 6px;
   overflow: hidden;
@@ -656,6 +663,26 @@
   height: 100%;
   border: 0;
   pointer-events: none;
+}
+.watch-pool .trailer-close {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+.watch-pool .trailer-close:hover {
+  background: rgba(0, 0, 0, 0.75);
 }
 .watch-pool .card h3 .year {
   font-weight: 500;

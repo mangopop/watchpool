@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { REACTIONS, TIER_ICON } from "@/lib/watch-pool/constants";
 import { TMDB_POSTER_BASE } from "@/lib/tmdb-shared";
 import {
@@ -50,6 +50,7 @@ export function MovieCard({
   const [trailerHover, setTrailerHover] = useState(false);
   const trailerTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const trailerFrame = useRef<HTMLIFrameElement>(null);
+  const posterWrapRef = useRef<HTMLSpanElement>(null);
 
   function startTrailerHover() {
     if (!movie.trailerKey) return;
@@ -59,6 +60,30 @@ export function MovieCard({
     if (trailerTimer.current) clearTimeout(trailerTimer.current);
     setTrailerHover(false);
   }
+
+  // Small/narrow windows leave little room to move the mouse off the
+  // popover without it landing back on the poster or a neighboring card,
+  // and touch devices have no hover-off at all — so once the preview is
+  // open, any tap/click outside it (or Escape) closes it directly instead
+  // of relying on mouseleave.
+  useEffect(() => {
+    if (!trailerHover) return;
+    function handleOutside(e: MouseEvent | TouchEvent) {
+      if (posterWrapRef.current?.contains(e.target as Node)) return;
+      stopTrailerHover();
+    }
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "Escape") stopTrailerHover();
+    }
+    document.addEventListener("mousedown", handleOutside);
+    document.addEventListener("touchstart", handleOutside);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("mousedown", handleOutside);
+      document.removeEventListener("touchstart", handleOutside);
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, [trailerHover]);
   function unmuteTrailer() {
     // Browsers only allow autoplay when it starts muted (mute=1 in the
     // embed URL) — unmuting it a beat later via the player API is the
@@ -131,9 +156,18 @@ export function MovieCard({
   }
 
   return (
-    <article className={`card${ret ? " ghosted" : ""}`}>
+    <article className={`card${ret ? " ghosted" : ""}${trailerHover ? " trailer-open" : ""}`}>
       <div className="card-top">
-        <span className="poster-wrap" onMouseEnter={startTrailerHover} onMouseLeave={stopTrailerHover}>
+        <span
+          ref={posterWrapRef}
+          className="poster-wrap"
+          onMouseEnter={startTrailerHover}
+          onMouseLeave={stopTrailerHover}
+          onClick={() => {
+            if (!movie.trailerKey || trailerHover) return;
+            setTrailerHover(true);
+          }}
+        >
           <span className="poster" style={{ background: posterGradient(movie.title) }}>
             {movie.posterPath ? (
               <img src={`${TMDB_POSTER_BASE}${movie.posterPath}`} alt="" />
@@ -159,6 +193,17 @@ export function MovieCard({
                 frameBorder={0}
                 onLoad={() => setTimeout(unmuteTrailer, 400)}
               />
+              <button
+                type="button"
+                className="trailer-close"
+                aria-label="Close trailer preview"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  stopTrailerHover();
+                }}
+              >
+                ×
+              </button>
             </span>
           )}
         </span>
