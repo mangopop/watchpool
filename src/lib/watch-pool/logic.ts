@@ -187,10 +187,14 @@ export const HOT_MAX_ITEMS = HOT_MAX;
 // at all yet (no status set — want/watched/skip all count as a response and
 // drop it from the running). This is TMDB's own score, not the group's —
 // see tallyVerdict for the group-consensus version used on the hero card.
+// Below this, "Highest rated" reads as an endorsement it hasn't earned.
+const MUST_SEE_MIN_RATING = 7;
+
 export function mustSee(state: PoolState): MustSeeCandidate | null {
   const candidates = livePool(state)
     .map((movie): MustSeeCandidate | null => {
       if (movie.tmdbRating === null) return null;
+      if (movie.tmdbRating < MUST_SEE_MIN_RATING) return null;
       if (movie.recommendedBy === state.currentFriend) return null;
       if (myReaction(movie, state.currentFriend).status !== null) return null;
       return { movie, tally: tallyFor(state, movie), tmdbRating: movie.tmdbRating };
