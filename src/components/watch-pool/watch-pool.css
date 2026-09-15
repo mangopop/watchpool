@@ -621,6 +621,12 @@
   color: var(--amber-ink);
   border-color: var(--bone);
 }
+.watch-pool .chip-count {
+  opacity: 0.55;
+}
+.watch-pool .chip[aria-pressed="true"] .chip-count {
+  opacity: 0.75;
+}
 
 /* ---------- pool cards ---------- */
 .watch-pool .grid {

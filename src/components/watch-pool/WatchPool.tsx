@@ -359,18 +359,32 @@ export function WatchPool({
     .sort((a, b) => new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime())
     .filter((m) => passesFilter(state, m));
 
+  // One retireState/myReaction lookup per movie, not one per filter per
+  // movie — passesFilter's per-filter semantics mirrored inline here so
+  // counting 8 filters doesn't multiply the tallyFor cost inside retireState.
+  const filterCounts: Record<string, number> = Object.fromEntries(FILTERS.map((f) => [f.id, 0]));
   let ignoredCount = 0;
   let pannedCount = 0;
   for (const m of movies) {
-    const r = retireState(state, m);
-    if (!r) continue;
-    if (r.bucket === "ignored") ignoredCount++;
-    else pannedCount++;
+    filterCounts.all++;
+    const ret = retireState(state, m);
+    if (ret) {
+      if (ret.bucket === "ignored") {
+        ignoredCount++;
+        filterCounts.ignored++;
+      } else {
+        pannedCount++;
+        filterCounts.panned++;
+      }
+      continue;
+    }
+    if (m.recommendedBy === currentUserId) filterCounts.mine++;
+    const status = myReaction(m, currentUserId).status;
+    filterCounts[status ?? "undecided"]++;
   }
-  // "All" now includes ignored/panned titles too, so its count needs the
-  // retired ones subtracted back out; every other filter already excludes
-  // them at the source (passesFilter).
-  const liveCount = filter === "all" ? visibleMovies.length - ignoredCount - pannedCount : visibleMovies.length;
+  // The pool summary is a whole-pool stat, not a reflection of whichever
+  // filter is currently selected — count against the full movie list.
+  const liveCount = movies.length - ignoredCount - pannedCount;
   const shelfHead =
     filter === "ignored"
       ? `Ignored · ${visibleMovies.length} going unwatched`
@@ -612,7 +626,7 @@ export function WatchPool({
               aria-pressed={filter === f.id}
               onClick={() => setFilter(f.id)}
             >
-              {f.label}
+              {f.label} <span className="chip-count">{filterCounts[f.id]}</span>
             </button>
           ))}
         </div>
