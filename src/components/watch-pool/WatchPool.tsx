@@ -220,6 +220,8 @@ export function WatchPool({
   async function addMovie(title: string, pitch: string, tmdbId: number | null, mediaType: TmdbMediaType) {
     try {
       const row = await addMovieAction(groupId, title, pitch, tmdbId, mediaType);
+      // Recommending a title means you've already seen it, so mark it watched for the recommender.
+      const ownReaction: Reaction = { status: "watched", rating: null, note: null };
       setMovies((s) => [
         {
           id: row.id,
@@ -230,7 +232,7 @@ export function WatchPool({
           providers: row.providers,
           pitch: row.pitch,
           dateAdded: row.date_added,
-          reactions: {},
+          reactions: { [currentUserId]: ownReaction },
           tmdbId: row.tmdb_id ?? null,
           posterPath: row.poster_path ?? null,
           releaseYear: row.release_year ?? null,
@@ -240,6 +242,17 @@ export function WatchPool({
         },
         ...s,
       ]);
+      try {
+        await setReactionAction(row.id, {
+          status: ownReaction.status,
+          rating: ownReaction.rating,
+          note: ownReaction.note,
+          noteDismissed: false,
+        });
+      } catch {
+        applyReaction(row.id, { status: null, rating: null, note: null });
+        reportError();
+      }
     } catch {
       reportError();
     }

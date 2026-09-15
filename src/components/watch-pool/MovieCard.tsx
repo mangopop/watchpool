@@ -160,7 +160,18 @@ export function MovieCard({
         </span>
         <div>
           <h3>
-            {movie.title}
+            {movie.tmdbId ? (
+              <a
+                className="title-link"
+                href={`https://www.themoviedb.org/${movie.mediaType}/${movie.tmdbId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {movie.title}
+              </a>
+            ) : (
+              movie.title
+            )}
             {movie.releaseYear && <span className="year"> ({movie.releaseYear})</span>}
             {movie.mediaType === "tv" && <span className="media-tag"> Series</span>}
             {!hideTmdbRating && movie.tmdbRating !== null && (
@@ -198,7 +209,7 @@ export function MovieCard({
         )}
       </div>
 
-      <p className="pitch">{movie.pitch}</p>
+      {movie.pitch && <p className="pitch">{movie.pitch}</p>}
 
       {movie.plea && (
         <p className="defence">

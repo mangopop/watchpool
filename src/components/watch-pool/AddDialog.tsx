@@ -83,7 +83,7 @@ export const AddDialog = forwardRef<AddDialogHandle, AddDialogProps>(function Ad
           e.preventDefault();
           const t = title.trim();
           const p = pitch.trim();
-          if (!t || !p) return;
+          if (!t) return;
           const match = selected?.title === t ? selected : null;
           onAdd(t, p, match?.tmdbId ?? null, match?.mediaType ?? "movie");
           dialogRef.current?.close();
@@ -132,16 +132,14 @@ export const AddDialog = forwardRef<AddDialogHandle, AddDialogProps>(function Ad
           )}
         </div>
         <div className="field">
-          <label htmlFor="pitchInput">Why should the group watch it?</label>
+          <label htmlFor="pitchInput">Why should the group watch it? (optional)</label>
           <textarea
             id="pitchInput"
-            required
             maxLength={220}
             placeholder="One or two sentences on why you're recommending it."
             value={pitch}
             onChange={(e) => setPitch(e.target.value)}
           />
-          <span className="hint">Required — a pick without a pitch isn&rsquo;t a recommendation</span>
         </div>
         <div className="modal-actions">
           <button type="button" className="btn-ghost" onClick={() => dialogRef.current?.close()}>
