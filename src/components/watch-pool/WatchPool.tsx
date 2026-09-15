@@ -492,8 +492,7 @@ export function WatchPool({
               <span className="taste-info">
                 ⓘ
                 <span className="taste-info-bubble">
-                  How closely your ratings match on movies you&rsquo;ve both watched — not how many you&rsquo;d both
-                  pick.
+                  How closely your ratings match on movies you&rsquo;ve both watched.
                 </span>
               </span>
             </span>
