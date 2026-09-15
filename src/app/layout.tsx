@@ -32,7 +32,7 @@ const ibmPlexMono = IBM_Plex_Mono({
 
 const spectral = Spectral({
   variable: "--font-spectral",
-  weight: ["400", "500"],s
+  weight: ["400", "500"],
   style: ["normal", "italic"],
   subsets: ["latin"],
 });
