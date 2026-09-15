@@ -4,6 +4,7 @@ import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { SERVICES } from "@/lib/watch-pool/constants";
 import { myServices } from "@/lib/watch-pool/logic";
 import type { PoolState } from "@/lib/watch-pool/types";
+import { ToggleRow } from "./ToggleRow";
 
 export interface SettingsDialogHandle {
   open: () => void;
@@ -79,22 +80,14 @@ export const SettingsDialog = forwardRef<SettingsDialogHandle, SettingsDialogPro
           <p className="lede">
             One-time setup, per person — drives &ldquo;streaming on a service you have&rdquo;
           </p>
-          <div className="field">
-            <span className="step-label">Your services</span>
-            <div className="toggle-row">
-              {SERVICES.map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  className="toggle"
-                  aria-pressed={mine.includes(s.id)}
-                  onClick={() => onToggleService(s.id)}
-                >
-                  {s.name}
-                </button>
-              ))}
-            </div>
-          </div>
+          <ToggleRow
+            label="Your services"
+            options={SERVICES}
+            getKey={(s) => s.id}
+            getLabel={(s) => s.name}
+            isActive={(s) => mine.includes(s.id)}
+            onToggle={(s) => onToggleService(s.id)}
+          />
           <div className="field">
             <span className="step-label">Ratings</span>
             <div className="toggle-row">

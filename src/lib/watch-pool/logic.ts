@@ -136,6 +136,13 @@ export function tallyFor(state: PoolState, movie: Movie): Tally {
   return t;
 }
 
+// Shared "X% loved/liked it" framing used by the hero, hot-mini cards, and
+// the Tonight picker — leads with lovedPct once anyone loved it, otherwise
+// falls back to likedPct.
+export function tallyVerdict(t: Tally): { pct: number; label: string } {
+  return t.loved > 0 ? { pct: t.lovedPct, label: "loved it" } : { pct: t.likedPct, label: "liked it" };
+}
+
 // Two buckets. Ignored can be revived; panned is final.
 export function retireState(state: PoolState, movie: Movie): RetireState | null {
   if (movie.revived) return null;

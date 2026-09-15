@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { REACTIONS, TIER_ICON } from "@/lib/watch-pool/constants";
+import { TIER_ICON } from "@/lib/watch-pool/constants";
 import { TMDB_POSTER_BASE } from "@/lib/tmdb-shared";
 import { ReactionStatusButtons } from "./ReactionStatusButtons";
+import { ReactionTierButtons } from "./ReactionTierButtons";
 import {
   ageRatingClass,
   daysAgoLabel,
@@ -387,22 +388,12 @@ export function MovieCard({
           />
 
           {mine.status === "watched" && (
-            <div className="react-row">
-              <span>Your take</span>
-              {REACTIONS.map((r) => (
-                <button
-                  key={r.id}
-                  type="button"
-                  className="react-btn"
-                  aria-pressed={mine.rating === r.id}
-                  title={r.label}
-                  aria-label={r.label}
-                  onClick={() => onSetRating(movie.id, r.id)}
-                >
-                  {r.icon}
-                </button>
-              ))}
-            </div>
+            <ReactionTierButtons
+              ariaLabel="Your rating"
+              label="Your take"
+              rating={mine.rating}
+              onSetRating={(r) => onSetRating(movie.id, r)}
+            />
           )}
 
           {prompt && (

@@ -24,6 +24,7 @@ import {
   retireState,
   runtimeLabel,
   serviceName,
+  tallyVerdict,
 } from "@/lib/watch-pool/logic";
 import type { Friend, Movie, PoolState, Reaction, ReactionStatus, ReactionTier } from "@/lib/watch-pool/types";
 import { AddDialog, type AddDialogHandle } from "./AddDialog";
@@ -488,8 +489,8 @@ export function WatchPool({
                   <span>watched</span>
                 </span>
                 <span className="figure gold">
-                  <b>{hero.tally.loved > 0 ? hero.tally.lovedPct : hero.tally.likedPct}%</b>
-                  <span>{hero.tally.loved > 0 ? "loved it" : "liked it"}</span>
+                  <b>{tallyVerdict(hero.tally).pct}%</b>
+                  <span>{tallyVerdict(hero.tally).label}</span>
                 </span>
               </div>
               <div className="cta">

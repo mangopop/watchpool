@@ -1,8 +1,9 @@
 "use client";
 
 import { forwardRef, useImperativeHandle, useRef } from "react";
-import { runtimeLabel, serviceName, tonightPicks } from "@/lib/watch-pool/logic";
+import { runtimeLabel, serviceName, tallyVerdict, tonightPicks } from "@/lib/watch-pool/logic";
 import type { PoolState } from "@/lib/watch-pool/types";
+import { ToggleRow } from "./ToggleRow";
 
 export interface TonightDialogHandle {
   open: () => void;
@@ -45,22 +46,14 @@ export const TonightDialog = forwardRef<TonightDialogHandle, TonightDialogProps>
           In the pool → you haven&rsquo;t seen it → streaming on your services → fits your time → ranked
           by how the group rated it
         </p>
-        <div className="field">
-          <span className="step-label">Time available</span>
-          <div className="toggle-row">
-            {TIME_OPTIONS.map((opt) => (
-              <button
-                key={opt.mins}
-                type="button"
-                className="toggle"
-                aria-pressed={state.timeLimit === opt.mins}
-                onClick={() => onSetTimeLimit(opt.mins)}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </div>
+        <ToggleRow
+          label="Time available"
+          options={TIME_OPTIONS}
+          getKey={(opt) => opt.mins}
+          getLabel={(opt) => opt.label}
+          isActive={(opt) => state.timeLimit === opt.mins}
+          onToggle={(opt) => onSetTimeLimit(opt.mins)}
+        />
 
         <div className="chain">
           {res.picks.length === 0 ? (
@@ -74,16 +67,8 @@ export const TonightDialog = forwardRef<TonightDialogHandle, TonightDialogProps>
                 "no verdicts yet"
               ) : (
                 <>
-                  {p.tally.loved > 0 ? (
-                    <>
-                      <b>{p.tally.loved}</b> loved it
-                    </>
-                  ) : (
-                    <>
-                      <b>{p.tally.likedPct}%</b> liked it
-                    </>
-                  )}{" "}
-                  · {p.tally.watched}/{p.tally.total} watched
+                  <b>{tallyVerdict(p.tally).pct}%</b> {tallyVerdict(p.tally).label} ·{" "}
+                  {p.tally.watched}/{p.tally.total} watched
                 </>
               );
               return (

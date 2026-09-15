@@ -2,10 +2,10 @@
 
 import { useRef } from "react";
 import { useImperativeHandle, forwardRef, useState, useEffect } from "react";
-import { REACTIONS } from "@/lib/watch-pool/constants";
 import { TMDB_POSTER_BASE } from "@/lib/tmdb-shared";
 import type { TmdbMediaType, TmdbSearchResult } from "@/lib/tmdb-shared";
 import type { ReactionTier } from "@/lib/watch-pool/types";
+import { ReactionTierButtons } from "./ReactionTierButtons";
 
 export interface AddDialogHandle {
   open: () => void;
@@ -158,25 +158,15 @@ export const AddDialog = forwardRef<AddDialogHandle, AddDialogProps>(function Ad
           />
         </div>
         <div className="field">
-          <label>Your take (recommending it means you've seen it)</label>
-          <div className="react-row" role="group" aria-label="Your rating">
-            {REACTIONS.map((r) => (
-              <button
-                key={r.id}
-                type="button"
-                className="react-btn"
-                aria-pressed={rating === r.id}
-                title={r.label}
-                aria-label={r.label}
-                onClick={() => {
-                  setRating(r.id);
-                  setRatingTouched(false);
-                }}
-              >
-                {r.icon}
-              </button>
-            ))}
-          </div>
+          <label>Your take (recommending it means you&apos;ve seen it)</label>
+          <ReactionTierButtons
+            ariaLabel="Your rating"
+            rating={rating}
+            onSetRating={(r) => {
+              setRating(r);
+              setRatingTouched(false);
+            }}
+          />
           {ratingTouched && !rating && <span className="hint">Pick one before adding it</span>}
         </div>
         <div className="modal-actions">
