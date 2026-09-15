@@ -18,6 +18,7 @@ import {
   friendName,
   hotCandidates,
   ignoredSpotlight,
+  mustSee,
   myPickAverageRating,
   myReaction,
   passesFilter,
@@ -28,6 +29,7 @@ import {
 } from "@/lib/watch-pool/logic";
 import type { Friend, Movie, PoolState, Reaction, ReactionStatus, ReactionTier } from "@/lib/watch-pool/types";
 import { AddDialog, type AddDialogHandle } from "./AddDialog";
+import { HeroBlurb } from "./HeroBlurb";
 import { MovieCard } from "./MovieCard";
 import { ReactionStatusButtons } from "./ReactionStatusButtons";
 import { SettingsDialog, type SettingsDialogHandle } from "./SettingsDialog";
@@ -339,6 +341,7 @@ export function WatchPool({
   const minis = hot.slice(1, HOT_MAX_ITEMS);
   const overflow = hot.length - HOT_MAX_ITEMS;
   const spotlight = ignoredSpotlight(state);
+  const topPick = mustSee(state);
 
   const myPickAvg = myPickAverageRating(state);
 
@@ -363,12 +366,16 @@ export function WatchPool({
     if (r.bucket === "ignored") ignoredCount++;
     else pannedCount++;
   }
+  // "All" now includes ignored/panned titles too, so its count needs the
+  // retired ones subtracted back out; every other filter already excludes
+  // them at the source (passesFilter).
+  const liveCount = filter === "all" ? visibleMovies.length - ignoredCount - pannedCount : visibleMovies.length;
   const shelfHead =
     filter === "ignored"
       ? `Ignored · ${visibleMovies.length} going unwatched`
       : filter === "panned"
         ? `Panned · ${visibleMovies.length} retired for good`
-        : `The pool · ${visibleMovies.length} live${ignoredCount ? ` · ${ignoredCount} ignored` : ""}${
+        : `The pool · ${liveCount} live${ignoredCount ? ` · ${ignoredCount} ignored` : ""}${
             pannedCount ? ` · ${pannedCount} panned` : ""
           }`;
 
@@ -449,15 +456,13 @@ export function WatchPool({
 
         {hero && (
           <section className="hot">
-            <div>
-              <div className="eyebrow">
-                {hero.missing <= 1 && hero.tally.watched >= hero.tally.total - 1
-                  ? "One seat left"
-                  : "Landing well"}
-              </div>
-              <h2>{hero.movie.title}</h2>
-              <div className="blindspot">
-                {hero.missing <= 1 && hero.tally.watched >= hero.tally.total - 1 ? (
+            <HeroBlurb
+              eyebrow={
+                hero.missing <= 1 && hero.tally.watched >= hero.tally.total - 1 ? "One seat left" : "Landing well"
+              }
+              title={hero.movie.title}
+              detail={
+                hero.missing <= 1 && hero.tally.watched >= hero.tally.total - 1 ? (
                   <>
                     Your blind spot — <b>everyone but you</b> has already settled this one
                   </>
@@ -468,18 +473,13 @@ export function WatchPool({
                     </b>{" "}
                     have seen it and it landed
                   </>
-                )}
-              </div>
-              <q>{hero.movie.pitch}</q>
-              <cite className="said">
-                —{" "}
-                {hero.movie.recommendedBy === currentUserId ? (
-                  <b className="yours">You</b>
-                ) : (
-                  <b>{friendName(friends, hero.movie.recommendedBy)}</b>
-                )}
-              </cite>
-            </div>
+                )
+              }
+              pitch={hero.movie.pitch}
+              recommendedBy={hero.movie.recommendedBy}
+              currentUserId={currentUserId}
+              friends={friends}
+            />
             <div>
               <div className="verdict">
                 <span className="figure">
@@ -497,7 +497,7 @@ export function WatchPool({
                 <button type="button" onClick={() => setStatus(hero.movie.id, "watched")}>
                   Mark watched
                 </button>
-                <button type="button" className="solid" onClick={() => setStatus(hero.movie.id, "want")}>
+                <button type="button" onClick={() => setStatus(hero.movie.id, "want")}>
                   Want to watch
                 </button>
               </div>
@@ -520,6 +520,35 @@ export function WatchPool({
             ))}
             {overflow > 0 && <span className="hot-more">+{overflow} more in the pool</span>}
           </div>
+        )}
+
+        {topPick && (
+          <section className="must-see">
+            <HeroBlurb
+              eyebrow="Highest rated · you haven’t seen it"
+              title={topPick.movie.title}
+              detail={
+                <>
+                  <b>★ {topPick.tmdbRating.toFixed(1)}</b> on TMDB
+                  {topPick.tally.watched > 0 && (
+                    <>
+                      {" "}
+                      — {topPick.tally.watched} of {topPick.tally.total} in the group have watched it
+                    </>
+                  )}
+                </>
+              }
+              pitch={topPick.movie.pitch}
+              recommendedBy={topPick.movie.recommendedBy}
+              currentUserId={currentUserId}
+              friends={friends}
+            />
+            <ReactionStatusButtons
+              title={topPick.movie.title}
+              status={myReaction(topPick.movie, currentUserId).status}
+              onSetStatus={(s) => setStatus(topPick.movie.id, s)}
+            />
+          </section>
         )}
 
         {spotlight && (

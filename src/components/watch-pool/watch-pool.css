@@ -230,7 +230,8 @@
 }
 
 /* ---------- "one seat left" hero ---------- */
-.watch-pool .hot {
+.watch-pool .hot,
+.watch-pool .must-see {
   position: relative;
   overflow: hidden;
   border: 1px solid var(--rail-warm);
@@ -242,6 +243,19 @@
   grid-template-columns: 1fr auto;
   gap: 26px;
   align-items: center;
+}
+.watch-pool .must-see {
+  border-color: #1f4a42;
+  background: linear-gradient(112deg, #132420 0%, #101a17 58%, #0d1513 100%);
+}
+.watch-pool .must-see .eyebrow {
+  color: var(--sage-lit);
+}
+.watch-pool .must-see .eyebrow::after {
+  background: linear-gradient(90deg, #1f4a42, transparent);
+}
+.watch-pool .must-see .seg {
+  justify-self: end;
 }
 .watch-pool .hot::before {
   content: "";
@@ -263,7 +277,19 @@
     opacity: 1;
   }
 }
-.watch-pool .hot > * {
+.watch-pool .must-see::before {
+  content: "";
+  position: absolute;
+  left: -8%;
+  top: -120%;
+  width: 52%;
+  height: 340%;
+  background: radial-gradient(closest-side, rgba(111, 211, 190, 0.28), transparent 72%);
+  pointer-events: none;
+  animation: watch-pool-glow 7s ease-in-out infinite;
+}
+.watch-pool .hot > *,
+.watch-pool .must-see > * {
   position: relative;
   z-index: 2;
 }
@@ -285,7 +311,8 @@
   height: 1px;
   background: linear-gradient(90deg, var(--rail-warm), transparent);
 }
-.watch-pool .hot h2 {
+.watch-pool .hot h2,
+.watch-pool .must-see h2 {
   font-family: var(--font-big-shoulders-display), sans-serif;
   font-weight: 800;
   text-transform: uppercase;
@@ -294,7 +321,8 @@
   margin: 0 0 8px;
   letter-spacing: 0.008em;
 }
-.watch-pool .hot .blindspot {
+.watch-pool .hot .blindspot,
+.watch-pool .must-see .blindspot {
   font-family: var(--font-ibm-plex-mono), monospace;
   font-size: 10px;
   letter-spacing: 0.12em;
@@ -306,7 +334,12 @@
   color: var(--parch);
   font-weight: 500;
 }
-.watch-pool .hot q {
+.watch-pool .must-see .blindspot b {
+  color: var(--sage-lit);
+  font-weight: 500;
+}
+.watch-pool .hot q,
+.watch-pool .must-see q {
   font-family: var(--font-spectral), serif;
   font-style: italic;
   font-size: 15px;
@@ -366,11 +399,6 @@
 .watch-pool .cta button:hover {
   border-color: var(--amber);
   color: var(--bone);
-}
-.watch-pool .cta button.solid {
-  background: var(--amber);
-  border-color: var(--amber);
-  color: var(--amber-ink);
 }
 .watch-pool .hot-extra {
   display: flex;
@@ -601,6 +629,22 @@
 .watch-pool .card.ghosted {
   opacity: 0.62;
 }
+.watch-pool .card.panned {
+  overflow: hidden;
+}
+.watch-pool .card.panned::after {
+  content: "👎";
+  position: absolute;
+  z-index: -1;
+  right: -14px;
+  bottom: -30px;
+  font-size: 130px;
+  line-height: 1;
+  opacity: 0.1;
+  filter: grayscale(1);
+  pointer-events: none;
+  transform: rotate(-8deg);
+}
 .watch-pool .card::before {
   content: "";
   position: absolute;
@@ -830,10 +874,6 @@
   border-color: var(--rust);
   color: var(--rust-lit);
   background: rgba(201, 106, 78, 0.1);
-}
-.watch-pool .flag.archived {
-  border-color: #4a4231;
-  color: var(--dust);
 }
 .watch-pool .flag.where {
   border-color: var(--rail-warm);
@@ -1137,6 +1177,18 @@
   color: var(--dust);
   text-decoration: underline;
 }
+.watch-pool .retired-note {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.watch-pool .retired-note .why {
+  font-family: var(--font-ibm-plex-mono), monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dust);
+}
 .watch-pool .defend-row {
   display: flex;
   gap: 6px;
@@ -1416,7 +1468,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .watch-pool .hot::before {
+  .watch-pool .hot::before,
+  .watch-pool .must-see::before {
     animation: none;
   }
   .watch-pool .card,
@@ -1429,9 +1482,13 @@
   }
 }
 @media (max-width: 640px) {
-  .watch-pool .hot {
+  .watch-pool .hot,
+  .watch-pool .must-see {
     grid-template-columns: 1fr;
     padding: 20px;
+  }
+  .watch-pool .must-see .seg {
+    justify-self: stretch;
   }
   .watch-pool .verdict {
     justify-content: flex-start;

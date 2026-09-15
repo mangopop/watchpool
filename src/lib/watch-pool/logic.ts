@@ -6,6 +6,7 @@ import type {
   HotCandidate,
   IgnoredSpotlight,
   Movie,
+  MustSeeCandidate,
   NotePrompt,
   PoolState,
   Reaction,
@@ -172,6 +173,7 @@ export function hotCandidates(state: PoolState): HotCandidate[] {
       if (t.total > 0 && missing / t.total > 0.4) return null;
       if (t.watched < 2) return null;
       if (t.approval <= 0) return null;
+      if (movie.recommendedBy === state.currentFriend) return null;
       if (myReaction(movie, state.currentFriend).status === "watched") return null;
       return { movie, tally: t, missing, rank: (t.watched / t.total) * t.approval };
     })
@@ -180,6 +182,23 @@ export function hotCandidates(state: PoolState): HotCandidate[] {
 }
 
 export const HOT_MAX_ITEMS = HOT_MAX;
+
+// The pool's highest TMDB-rated title that the viewer hasn't weighed in on
+// at all yet (no status set — want/watched/skip all count as a response and
+// drop it from the running). This is TMDB's own score, not the group's —
+// see tallyVerdict for the group-consensus version used on the hero card.
+export function mustSee(state: PoolState): MustSeeCandidate | null {
+  const candidates = livePool(state)
+    .map((movie): MustSeeCandidate | null => {
+      if (movie.tmdbRating === null) return null;
+      if (movie.recommendedBy === state.currentFriend) return null;
+      if (myReaction(movie, state.currentFriend).status !== null) return null;
+      return { movie, tally: tallyFor(state, movie), tmdbRating: movie.tmdbRating };
+    })
+    .filter((c): c is MustSeeCandidate => c !== null)
+    .sort((a, b) => b.tmdbRating - a.tmdbRating);
+  return candidates[0] ?? null;
+}
 
 // Deliberately narrower than the "Ignored" filter's retireState bucket: this
 // is only for movies genuinely lost in the sea, to nudge the people who
@@ -333,8 +352,8 @@ export function passesFilter(state: PoolState, movie: Movie): boolean {
   const ret = retireState(state, movie);
   if (state.filter === "ignored") return !!ret && ret.bucket === "ignored";
   if (state.filter === "panned") return !!ret && ret.bucket === "panned";
-  if (ret) return false;
   if (state.filter === "all") return true;
+  if (ret) return false;
   if (state.filter === "mine") return movie.recommendedBy === state.currentFriend;
   // No default here — an un-reacted movie isn't an implicit "want", it's
   // just unset, so it should only ever show under "All".

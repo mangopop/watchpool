@@ -100,6 +100,12 @@ export interface IgnoredSpotlight {
   why: string;
 }
 
+export interface MustSeeCandidate {
+  movie: Movie;
+  tally: Tally;
+  tmdbRating: number;
+}
+
 export interface Affinity {
   pct: number;
   shared: number;

@@ -129,39 +129,45 @@ export function MovieCard({
 
   let revive: React.ReactNode = null;
   if (ret && ret.bucket === "ignored") {
-    revive =
-      movie.recommendedBy === state.currentFriend ? (
-        <div className="defend-row">
-          <input
-            type="text"
-            maxLength={140}
-            placeholder="Make your plea and bump it back…"
-            value={pleaText}
-            onChange={(e) => setPleaText(e.target.value)}
-          />
-          <button
-            type="button"
-            className="mini-btn"
-            onClick={() => {
-              if (!pleaText.trim()) return;
-              onPlea(movie.id, pleaText.trim());
-              setPleaText("");
-            }}
-          >
-            Bump
+    revive = (
+      <div className="retired-note">
+        <span className="why">{ret.why}</span>
+        {movie.recommendedBy === state.currentFriend ? (
+          <div className="defend-row">
+            <input
+              type="text"
+              maxLength={140}
+              placeholder="Make your plea and bump it back…"
+              value={pleaText}
+              onChange={(e) => setPleaText(e.target.value)}
+            />
+            <button
+              type="button"
+              className="mini-btn"
+              onClick={() => {
+                if (!pleaText.trim()) return;
+                onPlea(movie.id, pleaText.trim());
+                setPleaText("");
+              }}
+            >
+              Bump
+            </button>
+          </div>
+        ) : (
+          <button type="button" className="mini-btn" onClick={() => onBump(movie.id)}>
+            Bump it back
           </button>
-        </div>
-      ) : (
-        <button type="button" className="mini-btn" onClick={() => onBump(movie.id)}>
-          Bump it back
-        </button>
-      );
+        )}
+      </div>
+    );
   } else if (ret) {
     revive = <div className="ruled-out">Retired for good — the group has spoken</div>;
   }
 
   return (
-    <article className={`card${ret ? " ghosted" : ""}${trailerHover ? " trailer-open" : ""}`}>
+    <article
+      className={`card${ret ? " ghosted" : ""}${ret?.bucket === "panned" ? " panned" : ""}${trailerHover ? " trailer-open" : ""}`}
+    >
       <div className="card-top">
         <span
           ref={posterWrapRef}
@@ -248,14 +254,9 @@ export function MovieCard({
           <div className="by">{byline}</div>
         </div>
 
-        {(divisive || ret || movie.providers.length > 0 || movie.tmdbId) && (
+        {(divisive || movie.providers.length > 0 || movie.tmdbId) && (
           <div className="flags">
             {divisive && <span className="flag divisive">Most divisive</span>}
-            {ret && (
-              <span className="flag archived">
-                {ret.bucket === "panned" ? "Panned" : "Ignored"} · {ret.why}
-              </span>
-            )}
             {movie.providers.length > 0 ? (
               <span className={`flag where service-${movie.providers[0]}`}>
                 {serviceName(movie.providers[0])}
