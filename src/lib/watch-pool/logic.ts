@@ -121,7 +121,7 @@ export function retireState(state: PoolState, movie: Movie): RetireState | null 
   if (t.watched >= 2 && t.score < 0 && t.want === 0) {
     return { bucket: "panned", why: "the group didn't like it" };
   }
-  if (t.watched === 0 && t.want === 0 && (t.skip >= 2 || daysSince(movie.dateAdded) >= 45)) {
+  if (t.watched === 0 && t.want === 0 && (t.skip >= 2 || daysSince(movie.dateAdded) >= 7)) {
     return {
       bucket: "ignored",
       why: t.skip >= 2 ? `${t.skip} people passed without watching` : `untouched for ${daysSince(movie.dateAdded)} days`,
