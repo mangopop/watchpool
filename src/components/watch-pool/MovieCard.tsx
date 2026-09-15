@@ -28,6 +28,7 @@ interface MovieCardProps {
   onPlea: (movieId: string, plea: string) => void;
   onBump: (movieId: string) => void;
   onDelete: (movieId: string) => void;
+  onEditPitch: (movieId: string, pitch: string) => void;
 }
 
 export function MovieCard({
@@ -41,8 +42,11 @@ export function MovieCard({
   onPlea,
   onBump,
   onDelete,
+  onEditPitch,
 }: MovieCardProps) {
   const [pleaText, setPleaText] = useState("");
+  const [editingPitch, setEditingPitch] = useState(false);
+  const [pitchDraft, setPitchDraft] = useState(movie.pitch);
   const [trailerHover, setTrailerHover] = useState(false);
   const trailerTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const trailerFrame = useRef<HTMLIFrameElement>(null);
@@ -209,7 +213,58 @@ export function MovieCard({
         )}
       </div>
 
-      {movie.pitch && <p className="pitch">{movie.pitch}</p>}
+      {editingPitch ? (
+        <div className="pitch-edit">
+          <textarea
+            autoFocus
+            maxLength={220}
+            placeholder="One or two sentences on why you're recommending it."
+            value={pitchDraft}
+            onChange={(e) => setPitchDraft(e.target.value)}
+          />
+          <div className="pitch-edit-actions">
+            <button
+              type="button"
+              className="btn-ghost"
+              onClick={() => {
+                setPitchDraft(movie.pitch);
+                setEditingPitch(false);
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="btn-solid"
+              onClick={() => {
+                onEditPitch(movie.id, pitchDraft.trim());
+                setEditingPitch(false);
+              }}
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      ) : (
+        (movie.pitch || movie.recommendedBy === state.currentFriend) && (
+          <p className="pitch">
+            {movie.pitch}
+            {movie.recommendedBy === state.currentFriend && (
+              <button
+                type="button"
+                className="pitch-edit-btn"
+                aria-label="Edit comment"
+                onClick={() => {
+                  setPitchDraft(movie.pitch);
+                  setEditingPitch(true);
+                }}
+              >
+                Edit
+              </button>
+            )}
+          </p>
+        )
+      )}
 
       {movie.plea && (
         <p className="defence">

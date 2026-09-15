@@ -258,6 +258,17 @@ export function WatchPool({
     }
   }
 
+  async function editPitch(movieId: string, pitch: string) {
+    const prev = movies.find((m) => m.id === movieId);
+    setMovies((s) => s.map((m) => (m.id === movieId ? { ...m, pitch } : m)));
+    try {
+      await updateMovieAction(movieId, { pitch });
+    } catch {
+      if (prev) setMovies((s) => s.map((m) => (m.id === movieId ? prev : m)));
+      reportError();
+    }
+  }
+
   async function deleteMovie(movieId: string) {
     const prev = movies;
     setMovies((s) => s.filter((m) => m.id !== movieId));
@@ -533,6 +544,7 @@ export function WatchPool({
                 onPlea={submitPlea}
                 onBump={bumpBack}
                 onDelete={deleteMovie}
+                onEditPitch={editPitch}
               />
             ))
           )}

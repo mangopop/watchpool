@@ -785,6 +785,45 @@
 .watch-pool cite.said {
   margin-top: 9px;
 }
+.watch-pool .pitch-edit-btn {
+  font-family: var(--font-ibm-plex-mono), monospace;
+  font-style: normal;
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dust);
+  background: none;
+  border: none;
+  padding: 0;
+  margin-left: 8px;
+  cursor: pointer;
+}
+.watch-pool .pitch-edit-btn:hover {
+  color: var(--amber);
+}
+.watch-pool .pitch-edit {
+  margin-bottom: 8px;
+}
+.watch-pool .pitch-edit textarea {
+  width: 100%;
+  min-height: 60px;
+  font-family: var(--font-spectral), serif;
+  font-style: italic;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--parch);
+  background: var(--stub);
+  border: 1px solid var(--rail);
+  border-radius: 4px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+.watch-pool .pitch-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+}
 .watch-pool .defence {
   font-family: var(--font-spectral), serif;
   font-style: italic;

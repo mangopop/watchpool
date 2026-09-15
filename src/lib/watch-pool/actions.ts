@@ -176,7 +176,7 @@ export async function deleteMovieAction(movieId: string) {
 
 export async function updateMovieAction(
   movieId: string,
-  patch: { revived?: boolean; plea?: string; bumped_by?: string },
+  patch: { revived?: boolean; plea?: string; bumped_by?: string; pitch?: string },
 ) {
   const { supabase } = await requireUser();
   const { error } = await supabase.from("movies").update(patch).eq("id", movieId);
