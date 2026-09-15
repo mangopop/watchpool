@@ -463,7 +463,15 @@ export function WatchPool({
 
         {tastePairs.length > 0 && (
           <div className="taste">
-            <span>Taste overlap</span>
+            <span>
+              Taste overlap{" "}
+              <span
+                className="taste-info"
+                title="How closely your ratings match on movies you've both watched — not how many you'd both pick."
+              >
+                ⓘ
+              </span>
+            </span>
             {tastePairs.map((p) => (
               <span
                 className={`pair${p.pct >= 75 ? " high" : p.pct <= 40 ? " low" : ""}`}

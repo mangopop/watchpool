@@ -412,6 +412,13 @@
   color: var(--dust);
   margin-bottom: 22px;
 }
+.watch-pool .taste-info {
+  cursor: help;
+  opacity: 0.6;
+}
+.watch-pool .taste-info:hover {
+  opacity: 1;
+}
 .watch-pool .taste .pair {
   border: 1px solid var(--rail);
   border-radius: 999px;
