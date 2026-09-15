@@ -352,15 +352,26 @@ export function tonightPicks(state: PoolState): TonightResult {
   return out;
 }
 
-export function passesFilter(state: PoolState, movie: Movie): boolean {
+function matchesFilterId(state: PoolState, movie: Movie, id: string): boolean {
   const ret = retireState(state, movie);
-  if (state.filter === "ignored") return !!ret && ret.bucket === "ignored";
-  if (state.filter === "panned") return !!ret && ret.bucket === "panned";
-  if (state.filter === "all") return true;
+  if (id === "ignored") return !!ret && ret.bucket === "ignored";
+  if (id === "panned") return !!ret && ret.bucket === "panned";
   if (ret) return false;
-  if (state.filter === "mine") return movie.recommendedBy === state.currentFriend;
-  if (state.filter === "undecided") return myReaction(movie, state.currentFriend).status === null;
+  if (id === "mine") return movie.recommendedBy === state.currentFriend;
+  if (id === "undecided") return myReaction(movie, state.currentFriend).status === null;
   // No default here — an un-reacted movie isn't an implicit "want", it's
   // just unset, so it should only ever show under "All" or "Undecided".
-  return myReaction(movie, state.currentFriend).status === state.filter;
+  return myReaction(movie, state.currentFriend).status === id;
+}
+
+export function passesFilter(state: PoolState, movie: Movie): boolean {
+  const entries = Object.entries(state.filters);
+  const excludeIds = entries.filter(([, mode]) => mode === "exclude").map(([id]) => id);
+  if (excludeIds.some((id) => matchesFilterId(state, movie, id))) return false;
+
+  const includeIds = entries.filter(([, mode]) => mode === "include").map(([id]) => id);
+  // No include chips selected — nothing to OR together, so everything not
+  // excluded above passes (this is what "All" resets to).
+  if (includeIds.length === 0) return true;
+  return includeIds.some((id) => matchesFilterId(state, movie, id));
 }

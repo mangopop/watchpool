@@ -598,6 +598,10 @@
   align-items: center;
   margin-bottom: 26px;
 }
+.watch-pool .chip-wrap {
+  display: inline-flex;
+  align-items: stretch;
+}
 .watch-pool .chip {
   font-family: var(--font-ibm-plex-mono), monospace;
   font-size: 10px;
@@ -608,8 +612,9 @@
   background: transparent;
   color: var(--dust);
   border: 1px solid var(--rail);
-  border-radius: 999px;
-  padding: 8px 13px;
+  border-right: none;
+  border-radius: 999px 0 0 999px;
+  padding: 8px 8px 8px 12px;
   transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
 }
 .watch-pool .chip:hover {
@@ -621,11 +626,45 @@
   color: var(--amber-ink);
   border-color: var(--bone);
 }
+.watch-pool .chip-wrap.is-exclude .chip {
+  border-color: var(--rust);
+  color: var(--rust-lit);
+}
+.watch-pool .chip.no-exclude {
+  border-right: 1px solid var(--rail);
+  border-radius: 999px;
+  padding: 8px 13px;
+}
+.watch-pool .chip.no-exclude[aria-pressed="true"] {
+  border-color: var(--bone);
+}
 .watch-pool .chip-count {
   opacity: 0.55;
 }
 .watch-pool .chip[aria-pressed="true"] .chip-count {
   opacity: 0.75;
+}
+.watch-pool .chip-exclude {
+  font-family: var(--font-ibm-plex-mono), monospace;
+  font-size: 9px;
+  line-height: 1;
+  cursor: pointer;
+  background: transparent;
+  color: var(--rail-warm);
+  border: 1px solid var(--rail);
+  border-radius: 0 999px 999px 0;
+  padding: 8px 8px 8px 6px;
+  min-width: 22px;
+  transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
+}
+.watch-pool .chip-exclude:hover {
+  color: var(--rust-lit);
+  border-color: var(--rust);
+}
+.watch-pool .chip-exclude[aria-pressed="true"] {
+  background: var(--rust);
+  color: var(--parch);
+  border-color: var(--rust);
 }
 .watch-pool .rating-slider {
   display: flex;
@@ -1532,6 +1571,7 @@
   }
   .watch-pool .card,
   .watch-pool .chip,
+  .watch-pool .chip-exclude,
   .watch-pool .seg button,
   .watch-pool .cta button,
   .watch-pool .btn-add,

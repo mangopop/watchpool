@@ -29,6 +29,7 @@ import {
 } from "@/lib/watch-pool/logic";
 import type { Friend, Movie, PoolState, Reaction, ReactionStatus, ReactionTier } from "@/lib/watch-pool/types";
 import { AddDialog, type AddDialogHandle } from "./AddDialog";
+import { FilterChip } from "./FilterChip";
 import { HeroArt, HeroBlurb } from "./HeroBlurb";
 import { MovieCard } from "./MovieCard";
 import { ReactionStatusButtons } from "./ReactionStatusButtons";
@@ -69,7 +70,7 @@ export function WatchPool({
   initialServices: string[];
 }) {
   const [movies, setMovies] = useState<Movie[]>(initialMovies);
-  const [filter, setFilter] = useState("all");
+  const [filters, setFilters] = useState<Record<string, "include" | "exclude">>({});
   const [minRating, setMinRating] = useState(0);
   const [tonight, setTonight] = useState<PoolState["tonight"]>(null);
   const [timeLimit, setTimeLimit] = useState(999);
@@ -150,10 +151,32 @@ export function WatchPool({
   const tonightRef = useRef<TonightDialogHandle>(null);
   const settingsRef = useRef<SettingsDialogHandle>(null);
 
+  function toggleFilterInclude(id: string) {
+    if (id === "all") {
+      setFilters({});
+      return;
+    }
+    setFilters((s) => {
+      const next = { ...s };
+      if (next[id] === "include") delete next[id];
+      else next[id] = "include";
+      return next;
+    });
+  }
+
+  function toggleFilterExclude(id: string) {
+    setFilters((s) => {
+      const next = { ...s };
+      if (next[id] === "exclude") delete next[id];
+      else next[id] = "exclude";
+      return next;
+    });
+  }
+
   const state: PoolState = {
     currentFriend: currentUserId,
     friends,
-    filter,
+    filters,
     tonight,
     timeLimit,
     services: { [currentUserId]: myServices },
@@ -390,10 +413,11 @@ export function WatchPool({
   // The pool summary is a whole-pool stat, not a reflection of whichever
   // filter is currently selected — count against the full movie list.
   const liveCount = movies.length - ignoredCount - pannedCount;
+  const soleInclude = Object.entries(filters).filter(([, mode]) => mode === "include");
   const shelfHead =
-    filter === "ignored"
+    soleInclude.length === 1 && soleInclude[0][0] === "ignored"
       ? `Ignored · ${visibleMovies.length} going unwatched`
-      : filter === "panned"
+      : soleInclude.length === 1 && soleInclude[0][0] === "panned"
         ? `Panned · ${visibleMovies.length} retired for good`
         : `The pool · ${liveCount} live${ignoredCount ? ` · ${ignoredCount} ignored` : ""}${
             pannedCount ? ` · ${pannedCount} panned` : ""
@@ -625,14 +649,16 @@ export function WatchPool({
 
         <div className="filters" role="group" aria-label="Filter pool">
           {FILTERS.map((f) => (
-            <button
+            <FilterChip
               key={f.id}
-              className="chip"
-              aria-pressed={filter === f.id}
-              onClick={() => setFilter(f.id)}
-            >
-              {f.label} <span className="chip-count">{filterCounts[f.id]}</span>
-            </button>
+              label={f.label}
+              count={filterCounts[f.id]}
+              excludable={f.id !== "all"}
+              includeActive={f.id === "all" ? Object.keys(filters).length === 0 : filters[f.id] === "include"}
+              excludeActive={filters[f.id] === "exclude"}
+              onInclude={() => toggleFilterInclude(f.id)}
+              onExclude={() => toggleFilterExclude(f.id)}
+            />
           ))}
           <span className="spacer" />
           <div className="rating-slider">

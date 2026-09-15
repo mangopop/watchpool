@@ -57,7 +57,9 @@ export interface Tonight {
 export interface PoolState {
   currentFriend: FriendId;
   friends: Friend[];
-  filter: string;
+  // Multi-select filter chips, keyed by filter id. "include" chips OR together
+  // (empty = no include constraint, i.e. everything); any "exclude" match rejects.
+  filters: Record<string, "include" | "exclude">;
   tonight: Tonight | null;
   timeLimit: number;
   services: Record<FriendId, string[]>;
