@@ -624,9 +624,16 @@
 
 /* ---------- pool cards ---------- */
 .watch-pool .grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(282px, 1fr));
-  gap: 20px;
+  display: block;
+  column-width: 282px;
+  column-gap: 20px;
+}
+.watch-pool .grid .card {
+  break-inside: avoid;
+  margin-bottom: 20px;
+}
+.watch-pool .grid .empty {
+  break-inside: avoid;
 }
 .watch-pool .card {
   position: relative;
