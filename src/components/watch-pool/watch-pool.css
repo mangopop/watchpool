@@ -627,6 +627,25 @@
 .watch-pool .chip[aria-pressed="true"] .chip-count {
   opacity: 0.75;
 }
+.watch-pool .rating-slider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.watch-pool .rating-slider input[type="range"] {
+  width: 96px;
+  accent-color: var(--amber);
+  cursor: pointer;
+}
+.watch-pool .rating-slider-value {
+  font-family: var(--font-ibm-plex-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dust);
+  white-space: nowrap;
+  min-width: 62px;
+}
 
 /* ---------- pool cards ---------- */
 .watch-pool .grid {

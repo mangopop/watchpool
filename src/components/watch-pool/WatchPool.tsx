@@ -70,6 +70,7 @@ export function WatchPool({
 }) {
   const [movies, setMovies] = useState<Movie[]>(initialMovies);
   const [filter, setFilter] = useState("all");
+  const [minRating, setMinRating] = useState(0);
   const [tonight, setTonight] = useState<PoolState["tonight"]>(null);
   const [timeLimit, setTimeLimit] = useState(999);
   const [myServices, setMyServices] = useState<string[]>(initialServices);
@@ -357,7 +358,7 @@ export function WatchPool({
 
   const visibleMovies = [...movies]
     .sort((a, b) => new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime())
-    .filter((m) => passesFilter(state, m));
+    .filter((m) => passesFilter(state, m) && (m.tmdbRating ?? 0) >= minRating);
 
   // One retireState/myReaction lookup per movie, not one per filter per
   // movie — passesFilter's per-filter semantics mirrored inline here so
@@ -366,6 +367,7 @@ export function WatchPool({
   let ignoredCount = 0;
   let pannedCount = 0;
   for (const m of movies) {
+    if ((m.tmdbRating ?? 0) < minRating) continue;
     filterCounts.all++;
     const ret = retireState(state, m);
     if (ret) {
@@ -629,6 +631,19 @@ export function WatchPool({
               {f.label} <span className="chip-count">{filterCounts[f.id]}</span>
             </button>
           ))}
+          <span className="spacer" />
+          <div className="rating-slider">
+            <input
+              type="range"
+              min={0}
+              max={9}
+              step={1}
+              value={minRating}
+              onChange={(e) => setMinRating(Number(e.currentTarget.value))}
+              aria-label="Minimum TMDB rating"
+            />
+            <span className="rating-slider-value">{minRating > 0 ? `${minRating}+` : "Any rating"}</span>
+          </div>
         </div>
 
         <div className="grid">
