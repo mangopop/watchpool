@@ -542,7 +542,7 @@ export function WatchPool({
           <section className="must-see">
             <HeroArt title={topPick.movie.title} posterPath={topPick.movie.posterPath} />
             <HeroBlurb
-              eyebrow="Highest rated · you haven’t seen it"
+              eyebrow="Highly rated · you haven’t seen it"
               title={topPick.movie.title}
               detail={
                 <>
