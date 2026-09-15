@@ -420,12 +420,40 @@
   color: var(--dust);
   margin-bottom: 22px;
 }
+.watch-pool .taste-label {
+  position: relative;
+}
 .watch-pool .taste-info {
+  position: relative;
   cursor: help;
   opacity: 0.6;
 }
 .watch-pool .taste-info:hover {
   opacity: 1;
+}
+.watch-pool .taste-info-bubble {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  z-index: 20;
+  width: 220px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--stub-lit);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.12);
+  color: var(--parch);
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: 11px;
+  line-height: 1.4;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.1s ease;
+}
+.watch-pool .taste-info:hover .taste-info-bubble {
+  opacity: 1;
+  visibility: visible;
 }
 .watch-pool .taste .pair {
   border: 1px solid var(--rail);

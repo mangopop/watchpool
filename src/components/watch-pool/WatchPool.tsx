@@ -476,13 +476,14 @@ export function WatchPool({
 
         {tastePairs.length > 0 && (
           <div className="taste">
-            <span>
+            <span className="taste-label">
               Taste overlap{" "}
-              <span
-                className="taste-info"
-                title="How closely your ratings match on movies you've both watched — not how many you'd both pick."
-              >
+              <span className="taste-info">
                 ⓘ
+                <span className="taste-info-bubble">
+                  How closely your ratings match on movies you&rsquo;ve both watched — not how many you&rsquo;d both
+                  pick.
+                </span>
               </span>
             </span>
             {tastePairs.map((p) => (
