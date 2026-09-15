@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { REACTIONS, TIER_ICON } from "@/lib/watch-pool/constants";
 import { TMDB_POSTER_BASE } from "@/lib/tmdb-shared";
+import { ReactionStatusButtons } from "./ReactionStatusButtons";
 import {
   ageRatingClass,
   daysAgoLabel,
@@ -324,7 +325,7 @@ export function MovieCard({
 
       {movie.plea && (
         <p className="defence">
-          <span>{friendName(state.friends, movie.recommendedBy)} pleads the case</span>
+          <span>{friendName(state.friends, movie.pleaBy ?? movie.recommendedBy)} pleads the case</span>
           {movie.plea}
         </p>
       )}
@@ -379,19 +380,11 @@ export function MovieCard({
         revive
       ) : (
         <>
-          <div className="seg" role="group" aria-label={`Your status for ${movie.title}`}>
-            {(["want", "watched", "skip"] as ReactionStatus[]).map((s) => (
-              <button
-                key={s}
-                type="button"
-                data-state={s}
-                aria-pressed={mine.status === s}
-                onClick={() => onSetStatus(movie.id, s)}
-              >
-                {s === "want" ? "Want" : s === "watched" ? "Watched" : "Pass"}
-              </button>
-            ))}
-          </div>
+          <ReactionStatusButtons
+            title={movie.title}
+            status={mine.status}
+            onSetStatus={(s) => onSetStatus(movie.id, s)}
+          />
 
           {mine.status === "watched" && (
             <div className="react-row">

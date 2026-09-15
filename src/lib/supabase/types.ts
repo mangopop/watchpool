@@ -88,6 +88,7 @@ export interface Database {
           date_added: string;
           revived: boolean;
           plea: string | null;
+          plea_by: string | null;
           bumped_by: string | null;
           tmdb_id: number | null;
           poster_path: string | null;
@@ -108,6 +109,7 @@ export interface Database {
           date_added?: string;
           revived?: boolean;
           plea?: string | null;
+          plea_by?: string | null;
           bumped_by?: string | null;
           tmdb_id?: number | null;
           poster_path?: string | null;
@@ -124,6 +126,7 @@ export interface Database {
           pitch?: string;
           revived?: boolean;
           plea?: string | null;
+          plea_by?: string | null;
           bumped_by?: string | null;
           tmdb_id?: number | null;
           poster_path?: string | null;

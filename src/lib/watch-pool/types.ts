@@ -35,6 +35,7 @@ export interface Movie {
   dateAdded: string;
   reactions: Record<FriendId, Reaction>;
   plea?: string;
+  pleaBy?: FriendId;
   revived?: boolean;
   bumpedBy?: FriendId;
   tmdbId: number | null;
@@ -92,6 +93,11 @@ export interface HotCandidate {
   tally: Tally;
   missing: number;
   rank: number;
+}
+
+export interface IgnoredSpotlight {
+  movie: Movie;
+  why: string;
 }
 
 export interface Affinity {

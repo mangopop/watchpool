@@ -182,14 +182,25 @@ export async function deleteMovieAction(movieId: string) {
 
 export async function updateMovieAction(
   movieId: string,
-  patch: { revived?: boolean; plea?: string; bumped_by?: string; pitch?: string },
+  patch: { revived?: boolean; plea?: string; bumped?: boolean; pitch?: string },
 ) {
-  const { supabase } = await requireUser();
+  const { supabase, user } = await requireUser();
 
-  const allowedPatch: typeof patch = {};
+  // Who pleaded/bumped is always the caller — never trust a client-supplied
+  // id for this, or anyone could attribute a plea to someone else.
+  const allowedPatch: {
+    revived?: boolean;
+    plea?: string;
+    plea_by?: string;
+    bumped_by?: string;
+    pitch?: string;
+  } = {};
   if ("revived" in patch) allowedPatch.revived = patch.revived;
-  if ("plea" in patch) allowedPatch.plea = patch.plea;
-  if ("bumped_by" in patch) allowedPatch.bumped_by = patch.bumped_by;
+  if ("plea" in patch) {
+    allowedPatch.plea = patch.plea;
+    allowedPatch.plea_by = user.id;
+  }
+  if ("bumped" in patch && patch.bumped) allowedPatch.bumped_by = user.id;
   if ("pitch" in patch) allowedPatch.pitch = patch.pitch;
 
   const { error } = await supabase.from("movies").update(allowedPatch).eq("id", movieId);

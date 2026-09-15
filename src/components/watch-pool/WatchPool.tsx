@@ -17,7 +17,9 @@ import {
   affinity,
   friendName,
   hotCandidates,
+  ignoredSpotlight,
   myPickAverageRating,
+  myReaction,
   passesFilter,
   retireState,
   runtimeLabel,
@@ -26,6 +28,7 @@ import {
 import type { Friend, Movie, PoolState, Reaction, ReactionStatus, ReactionTier } from "@/lib/watch-pool/types";
 import { AddDialog, type AddDialogHandle } from "./AddDialog";
 import { MovieCard } from "./MovieCard";
+import { ReactionStatusButtons } from "./ReactionStatusButtons";
 import { SettingsDialog, type SettingsDialogHandle } from "./SettingsDialog";
 import { TonightDialog, type TonightDialogHandle } from "./TonightDialog";
 import "./watch-pool.css";
@@ -216,7 +219,9 @@ export function WatchPool({
 
   async function submitPlea(movieId: string, plea: string) {
     const prev = movies.find((m) => m.id === movieId);
-    setMovies((s) => s.map((m) => (m.id === movieId ? { ...m, plea, revived: true } : m)));
+    setMovies((s) =>
+      s.map((m) => (m.id === movieId ? { ...m, plea, pleaBy: currentUserId, revived: true } : m)),
+    );
     try {
       await updateMovieAction(movieId, { plea, revived: true });
     } catch {
@@ -231,7 +236,7 @@ export function WatchPool({
       s.map((m) => (m.id === movieId ? { ...m, revived: true, bumpedBy: currentUserId } : m)),
     );
     try {
-      await updateMovieAction(movieId, { revived: true, bumped_by: currentUserId });
+      await updateMovieAction(movieId, { revived: true, bumped: true });
     } catch {
       if (prev) setMovies((s) => s.map((m) => (m.id === movieId ? prev : m)));
       reportError();
@@ -332,6 +337,7 @@ export function WatchPool({
   const hero = hot[0];
   const minis = hot.slice(1, HOT_MAX_ITEMS);
   const overflow = hot.length - HOT_MAX_ITEMS;
+  const spotlight = ignoredSpotlight(state);
 
   const myPickAvg = myPickAverageRating(state);
 
@@ -513,6 +519,23 @@ export function WatchPool({
             ))}
             {overflow > 0 && <span className="hot-more">+{overflow} more in the pool</span>}
           </div>
+        )}
+
+        {spotlight && (
+          <section className="ignored-spotlight">
+            <div>
+              <div className="eyebrow">Lost in the sea</div>
+              <h3>{spotlight.movie.title}</h3>
+              <div className="why">
+                {friendName(friends, spotlight.movie.recommendedBy)}&rsquo;s pick — {spotlight.why}
+              </div>
+            </div>
+            <ReactionStatusButtons
+              title={spotlight.movie.title}
+              status={myReaction(spotlight.movie, currentUserId).status}
+              onSetStatus={(s) => setStatus(spotlight.movie.id, s)}
+            />
+          </section>
         )}
 
         {tastePairs.length > 0 && (

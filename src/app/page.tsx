@@ -109,6 +109,7 @@ export default async function Home() {
         ]),
     ),
     plea: m.plea ?? undefined,
+    pleaBy: m.plea_by ?? undefined,
     revived: m.revived,
     bumpedBy: m.bumped_by ?? undefined,
   }));

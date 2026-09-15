@@ -420,6 +420,40 @@
   color: var(--amber);
 }
 
+/* ---------- ignored spotlight — deliberately muted, not competing with .hot ---------- */
+.watch-pool .ignored-spotlight {
+  border: 1px solid #5a3c30;
+  border-radius: 12px;
+  background: var(--stub);
+  padding: 16px 20px;
+  margin-bottom: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.watch-pool .ignored-spotlight .eyebrow {
+  color: var(--rust-lit);
+}
+.watch-pool .ignored-spotlight .eyebrow::after {
+  background: linear-gradient(90deg, #5a3c30, transparent);
+}
+.watch-pool .ignored-spotlight h3 {
+  font-family: var(--font-big-shoulders-display), sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 24px;
+  line-height: 0.95;
+  margin: 0 0 4px;
+}
+.watch-pool .ignored-spotlight .why {
+  font-family: var(--font-ibm-plex-mono), monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dust);
+}
 /* ---------- taste affinity (per-pair, never a global hit rate) ---------- */
 .watch-pool .taste {
   display: flex;

@@ -4,6 +4,7 @@ import type {
   Friend,
   FriendId,
   HotCandidate,
+  IgnoredSpotlight,
   Movie,
   NotePrompt,
   PoolState,
@@ -172,6 +173,31 @@ export function hotCandidates(state: PoolState): HotCandidate[] {
 }
 
 export const HOT_MAX_ITEMS = HOT_MAX;
+
+// Deliberately narrower than the "Ignored" filter's retireState bucket: this
+// is only for movies genuinely lost in the sea, to nudge the people who
+// *didn't* recommend it into reacting. The recommender's own reaction is
+// always "watched" from the moment they add it (see WatchPool.addMovie), so
+// that default is excluded here — what matters is whether anyone else has
+// reacted at all. The moment one of them does (skip included), that's a
+// decision already made, and it drops out of the spotlight.
+//
+// Personalized per viewer: there's nothing the recommender themself can do
+// about their own pick sitting untouched, so it's never shown to them.
+export function ignoredSpotlight(state: PoolState): IgnoredSpotlight | null {
+  const candidates = state.movies.filter((movie) => {
+    if (movie.revived) return false;
+    if (movie.recommendedBy === state.currentFriend) return false;
+    if (daysSince(movie.dateAdded) < 7) return false;
+    return !state.friends.some((f) => f.id !== movie.recommendedBy && movie.reactions[f.id]?.status);
+  });
+  if (candidates.length === 0) return null;
+  const stalest = candidates.sort((a, b) => daysSince(b.dateAdded) - daysSince(a.dateAdded))[0];
+  return {
+    movie: stalest,
+    why: `untouched for ${daysSince(stalest.dateAdded)} days`,
+  };
+}
 
 // Per-pair affinity across four tiers; never a global hit rate.
 export function affinity(state: PoolState, aId: FriendId, bId: FriendId): Affinity | null {
