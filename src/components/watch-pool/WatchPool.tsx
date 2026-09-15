@@ -29,7 +29,7 @@ import {
 } from "@/lib/watch-pool/logic";
 import type { Friend, Movie, PoolState, Reaction, ReactionStatus, ReactionTier } from "@/lib/watch-pool/types";
 import { AddDialog, type AddDialogHandle } from "./AddDialog";
-import { HeroBlurb } from "./HeroBlurb";
+import { HeroArt, HeroBlurb } from "./HeroBlurb";
 import { MovieCard } from "./MovieCard";
 import { ReactionStatusButtons } from "./ReactionStatusButtons";
 import { SettingsDialog, type SettingsDialogHandle } from "./SettingsDialog";
@@ -456,6 +456,7 @@ export function WatchPool({
 
         {hero && (
           <section className="hot">
+            <HeroArt title={hero.movie.title} posterPath={hero.movie.posterPath} />
             <HeroBlurb
               eyebrow={
                 hero.missing <= 1 && hero.tally.watched >= hero.tally.total - 1 ? "One seat left" : "Landing well"
@@ -524,6 +525,7 @@ export function WatchPool({
 
         {topPick && (
           <section className="must-see">
+            <HeroArt title={topPick.movie.title} posterPath={topPick.movie.posterPath} />
             <HeroBlurb
               eyebrow="Highest rated · you haven’t seen it"
               title={topPick.movie.title}

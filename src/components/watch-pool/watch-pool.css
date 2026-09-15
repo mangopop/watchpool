@@ -293,6 +293,31 @@
   position: relative;
   z-index: 2;
 }
+.watch-pool .hero-art {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  height: 100%;
+  width: auto;
+  max-width: 75%;
+  object-fit: contain;
+  object-position: right center;
+  opacity: 0.5;
+  -webkit-mask-image: linear-gradient(to left, black 0%, transparent 100%);
+  mask-image: linear-gradient(to left, black 0%, transparent 100%);
+  pointer-events: none;
+  /* Vertically centered, then zoomed in slightly anchored to the right
+     edge — scales toward the left so the right side of the poster is
+     never the part that's cropped. */
+  transform: translateY(-50%) scale(1.1);
+  transform-origin: right center;
+}
+.watch-pool .hero-art-fallback {
+  width: 75%;
+  -webkit-mask-image: linear-gradient(to left, black 0%, transparent 100%);
+  mask-image: linear-gradient(to left, black 0%, transparent 100%);
+  opacity: 0.5;
+}
 .watch-pool .eyebrow {
   font-family: var(--font-ibm-plex-mono), monospace;
   font-size: 10.5px;
@@ -393,12 +418,14 @@
   padding: 9px 15px;
   border-radius: 8px;
   border: 1px solid #4a4231;
-  background: transparent;
+  background: rgba(14, 13, 9, 0.55);
   color: var(--parch);
+  transition: background 0.14s ease, border-color 0.14s ease, color 0.14s ease;
 }
 .watch-pool .cta button:hover {
   border-color: var(--amber);
   color: var(--bone);
+  background: rgba(14, 13, 9, 0.85);
 }
 .watch-pool .hot-extra {
   display: flex;
@@ -1076,17 +1103,18 @@
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  padding: 8px 2px;
+  padding: 9px 12px;
   border-radius: 6px;
   cursor: pointer;
   border: 1px solid var(--rail);
-  background: transparent;
+  background: rgba(14, 13, 9, 0.55);
   color: var(--dust);
   transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
 }
 .watch-pool .seg button:hover {
   color: var(--parch);
   border-color: var(--rail-warm);
+  background: rgba(14, 13, 9, 0.85);
 }
 .watch-pool .seg button[data-state="want"][aria-pressed="true"] {
   background: var(--amber);
@@ -1489,6 +1517,13 @@
   }
   .watch-pool .must-see .seg {
     justify-self: stretch;
+  }
+  .watch-pool .hero-art,
+  .watch-pool .hero-art-fallback {
+    /* Full-height bleed art assumes the hero's two-column layout; once it
+       stacks to one column the card's height is just "however tall the
+       text needs", so a height:100% image would tower over everything. */
+    display: none;
   }
   .watch-pool .verdict {
     justify-content: flex-start;
