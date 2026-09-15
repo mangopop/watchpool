@@ -2,15 +2,23 @@
 
 import { useRef } from "react";
 import { useImperativeHandle, forwardRef, useState, useEffect } from "react";
+import { REACTIONS } from "@/lib/watch-pool/constants";
 import { TMDB_POSTER_BASE } from "@/lib/tmdb-shared";
 import type { TmdbMediaType, TmdbSearchResult } from "@/lib/tmdb-shared";
+import type { ReactionTier } from "@/lib/watch-pool/types";
 
 export interface AddDialogHandle {
   open: () => void;
 }
 
 interface AddDialogProps {
-  onAdd: (title: string, pitch: string, tmdbId: number | null, mediaType: TmdbMediaType) => void;
+  onAdd: (
+    title: string,
+    pitch: string,
+    tmdbId: number | null,
+    mediaType: TmdbMediaType,
+    rating: ReactionTier,
+  ) => void;
 }
 
 export const AddDialog = forwardRef<AddDialogHandle, AddDialogProps>(function AddDialog(
@@ -25,6 +33,8 @@ export const AddDialog = forwardRef<AddDialogHandle, AddDialogProps>(function Ad
   const [selected, setSelected] = useState<TmdbSearchResult | null>(null);
   const [searching, setSearching] = useState(false);
   const [searchFailed, setSearchFailed] = useState(false);
+  const [rating, setRating] = useState<ReactionTier | null>(null);
+  const [ratingTouched, setRatingTouched] = useState(false);
 
   useImperativeHandle(ref, () => ({
     open: () => {
@@ -33,6 +43,8 @@ export const AddDialog = forwardRef<AddDialogHandle, AddDialogProps>(function Ad
       setResults([]);
       setSelected(null);
       setSearchFailed(false);
+      setRating(null);
+      setRatingTouched(false);
       dialogRef.current?.showModal();
       titleRef.current?.focus();
     },
@@ -84,8 +96,12 @@ export const AddDialog = forwardRef<AddDialogHandle, AddDialogProps>(function Ad
           const t = title.trim();
           const p = pitch.trim();
           if (!t) return;
+          if (!rating) {
+            setRatingTouched(true);
+            return;
+          }
           const match = selected?.title === t ? selected : null;
-          onAdd(t, p, match?.tmdbId ?? null, match?.mediaType ?? "movie");
+          onAdd(t, p, match?.tmdbId ?? null, match?.mediaType ?? "movie", rating);
           dialogRef.current?.close();
         }}
       >
@@ -140,6 +156,28 @@ export const AddDialog = forwardRef<AddDialogHandle, AddDialogProps>(function Ad
             value={pitch}
             onChange={(e) => setPitch(e.target.value)}
           />
+        </div>
+        <div className="field">
+          <label>Your take (recommending it means you've seen it)</label>
+          <div className="react-row" role="group" aria-label="Your rating">
+            {REACTIONS.map((r) => (
+              <button
+                key={r.id}
+                type="button"
+                className="react-btn"
+                aria-pressed={rating === r.id}
+                title={r.label}
+                aria-label={r.label}
+                onClick={() => {
+                  setRating(r.id);
+                  setRatingTouched(false);
+                }}
+              >
+                {r.icon}
+              </button>
+            ))}
+          </div>
+          {ratingTouched && !rating && <span className="hint">Pick one before adding it</span>}
         </div>
         <div className="modal-actions">
           <button type="button" className="btn-ghost" onClick={() => dialogRef.current?.close()}>

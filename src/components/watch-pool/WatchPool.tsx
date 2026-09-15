@@ -238,11 +238,17 @@ export function WatchPool({
     }
   }
 
-  async function addMovie(title: string, pitch: string, tmdbId: number | null, mediaType: TmdbMediaType) {
+  async function addMovie(
+    title: string,
+    pitch: string,
+    tmdbId: number | null,
+    mediaType: TmdbMediaType,
+    rating: ReactionTier,
+  ) {
     try {
       const row = await addMovieAction(groupId, title, pitch, tmdbId, mediaType);
       // Recommending a title means you've already seen it, so mark it watched for the recommender.
-      const ownReaction: Reaction = { status: "watched", rating: null, note: null };
+      const ownReaction: Reaction = { status: "watched", rating, note: null };
       setMovies((s) => [
         {
           id: row.id,
