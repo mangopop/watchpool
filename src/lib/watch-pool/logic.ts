@@ -355,7 +355,8 @@ export function passesFilter(state: PoolState, movie: Movie): boolean {
   if (state.filter === "all") return true;
   if (ret) return false;
   if (state.filter === "mine") return movie.recommendedBy === state.currentFriend;
+  if (state.filter === "undecided") return myReaction(movie, state.currentFriend).status === null;
   // No default here — an un-reacted movie isn't an implicit "want", it's
-  // just unset, so it should only ever show under "All".
+  // just unset, so it should only ever show under "All" or "Undecided".
   return myReaction(movie, state.currentFriend).status === state.filter;
 }

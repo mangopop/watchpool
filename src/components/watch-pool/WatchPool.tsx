@@ -38,6 +38,7 @@ import "./watch-pool.css";
 
 const FILTERS: { id: string; label: string }[] = [
   { id: "all", label: "All" },
+  { id: "undecided", label: "Undecided" },
   { id: "want", label: "Want to watch" },
   { id: "watched", label: "Watched" },
   { id: "skip", label: "Passed" },
