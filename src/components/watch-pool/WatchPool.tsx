@@ -363,21 +363,24 @@ export function WatchPool({
   // One retireState/myReaction lookup per movie, not one per filter per
   // movie — passesFilter's per-filter semantics mirrored inline here so
   // counting 8 filters doesn't multiply the tallyFor cost inside retireState.
+  //
+  // ignoredCount/pannedCount stay whole-pool (rating-independent) so
+  // liveCount below keeps its whole-pool-stat invariant; only the per-chip
+  // filterCounts respect minRating, matching what visibleMovies shows.
   const filterCounts: Record<string, number> = Object.fromEntries(FILTERS.map((f) => [f.id, 0]));
   let ignoredCount = 0;
   let pannedCount = 0;
   for (const m of movies) {
-    if ((m.tmdbRating ?? 0) < minRating) continue;
-    filterCounts.all++;
     const ret = retireState(state, m);
     if (ret) {
-      if (ret.bucket === "ignored") {
-        ignoredCount++;
-        filterCounts.ignored++;
-      } else {
-        pannedCount++;
-        filterCounts.panned++;
-      }
+      if (ret.bucket === "ignored") ignoredCount++;
+      else pannedCount++;
+    }
+    if ((m.tmdbRating ?? 0) < minRating) continue;
+    filterCounts.all++;
+    if (ret) {
+      if (ret.bucket === "ignored") filterCounts.ignored++;
+      else filterCounts.panned++;
       continue;
     }
     if (m.recommendedBy === currentUserId) filterCounts.mine++;
