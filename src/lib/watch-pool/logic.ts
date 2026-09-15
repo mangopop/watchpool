@@ -44,12 +44,21 @@ export function runtimeLabel(mins: number | null): string {
 }
 
 export function daysSince(iso: string): number {
-  return Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  // Calendar-day difference (local time), not a rolling 24h window — a pick
+  // added at 11pm yesterday should read "yesterday" a minute after midnight,
+  // not still "today" until a full 24h has elapsed.
+  const then = new Date(iso);
+  const now = new Date();
+  const startOfThen = new Date(then.getFullYear(), then.getMonth(), then.getDate());
+  const startOfNow = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.round((startOfNow.getTime() - startOfThen.getTime()) / 86400000);
 }
 
 export function daysAgoLabel(iso: string): string {
   const d = daysSince(iso);
-  return d <= 0 ? "today" : `${d}d ago`;
+  if (d <= 0) return "today";
+  if (d === 1) return "yesterday";
+  return `${d}d ago`;
 }
 
 export function myReaction(movie: Movie, friendId: FriendId): Reaction {
