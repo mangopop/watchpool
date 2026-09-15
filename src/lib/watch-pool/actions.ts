@@ -179,7 +179,14 @@ export async function updateMovieAction(
   patch: { revived?: boolean; plea?: string; bumped_by?: string; pitch?: string },
 ) {
   const { supabase } = await requireUser();
-  const { error } = await supabase.from("movies").update(patch).eq("id", movieId);
+
+  const allowedPatch: typeof patch = {};
+  if ("revived" in patch) allowedPatch.revived = patch.revived;
+  if ("plea" in patch) allowedPatch.plea = patch.plea;
+  if ("bumped_by" in patch) allowedPatch.bumped_by = patch.bumped_by;
+  if ("pitch" in patch) allowedPatch.pitch = patch.pitch;
+
+  const { error } = await supabase.from("movies").update(allowedPatch).eq("id", movieId);
   if (error) throw new Error(error.message);
 
   revalidatePath("/");
