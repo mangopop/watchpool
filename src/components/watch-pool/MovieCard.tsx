@@ -242,7 +242,7 @@ export function MovieCard({
                 {movie.ageRating}
               </span>
             )}
-            {movie.runtime !== null && <span className="runtime"> · {runtimeLabel(movie.runtime)}</span>}
+            {movie.runtime !== null && <span className="runtime">{runtimeLabel(movie.runtime)}</span>}
           </h3>
           {movie.genres.length > 0 && <div className="genres">{movie.genres.join(" · ")}</div>}
           <div className="by">{byline}</div>

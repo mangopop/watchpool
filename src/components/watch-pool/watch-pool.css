@@ -735,6 +735,7 @@
   text-transform: none;
   opacity: 0.6;
   font-size: 0.55em;
+  margin-left: 6px;
 }
 .watch-pool .card h3 .age-rating {
   display: inline-flex;
