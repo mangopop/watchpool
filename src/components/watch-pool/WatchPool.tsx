@@ -17,6 +17,7 @@ import {
   affinity,
   friendName,
   hotCandidates,
+  myPickAverageRating,
   passesFilter,
   retireState,
   runtimeLabel,
@@ -305,6 +306,8 @@ export function WatchPool({
   const minis = hot.slice(1, HOT_MAX_ITEMS);
   const overflow = hot.length - HOT_MAX_ITEMS;
 
+  const myPickAvg = myPickAverageRating(state);
+
   const tastePairs = friends
     .filter((f) => f.id !== currentUserId)
     .map((f) => {
@@ -511,6 +514,11 @@ export function WatchPool({
         <div className="shelf-head">
           <span>{shelfHead}</span>
           <span className="ruled" />
+          {myPickAvg !== null && (
+            <span className="pick-stat">
+              Your picks average <b>{myPickAvg.toFixed(1)}</b> on TMDB
+            </span>
+          )}
         </div>
 
         <div className="filters" role="group" aria-label="Filter pool">

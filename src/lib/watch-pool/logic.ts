@@ -60,6 +60,14 @@ export function myServices(state: PoolState): string[] {
   return state.services[state.currentFriend] ?? [];
 }
 
+export function myPickAverageRating(state: PoolState): number | null {
+  const ratings = state.movies
+    .filter((m) => m.recommendedBy === state.currentFriend && m.tmdbRating !== null)
+    .map((m) => m.tmdbRating as number);
+  if (ratings.length === 0) return null;
+  return ratings.reduce((sum, r) => sum + r, 0) / ratings.length;
+}
+
 export function tallyFor(state: PoolState, movie: Movie): Tally {
   const t: Tally = {
     want: 0,

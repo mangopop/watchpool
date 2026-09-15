@@ -93,6 +93,18 @@
   color: var(--amber);
   font-style: normal;
 }
+.watch-pool .pick-stat {
+  font-family: var(--font-ibm-plex-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dust);
+  white-space: nowrap;
+}
+.watch-pool .pick-stat b {
+  color: var(--amber);
+  font-size: 12px;
+}
 .watch-pool .spacer {
   flex: 1 1 auto;
   min-width: 6px;
