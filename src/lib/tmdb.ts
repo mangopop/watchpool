@@ -20,6 +20,8 @@ export interface TmdbMovieDetails extends TmdbSearchResult {
   // YouTube video id for the trailer, if TMDB has one — null lets the
   // poster hover-preview fall back to a static image.
   trailerKey: string | null;
+  // GB certification (e.g. "12A", "15") — null if TMDB has no GB entry.
+  ageRating: string | null;
 }
 
 function apiKey(): string {
@@ -114,11 +116,38 @@ function pickTrailerKey(videos: TmdbVideoEntry[] | undefined): string | null {
   return best?.key ?? null;
 }
 
+// Same GB scope as watch providers (see TMDB_REGION) — a BBFC-style rating
+// ("U", "PG", "12A", "15", "18") is only meaningful for one certification
+// board at a time, and the group is UK-based.
+interface TmdbMovieReleaseDates {
+  results?: { iso_3166_1: string; release_dates: { certification: string }[] }[];
+}
+interface TmdbContentRatings {
+  results?: { iso_3166_1: string; rating: string }[];
+}
+
+function pickAgeRating(
+  mediaType: TmdbMediaType,
+  releaseDates: TmdbMovieReleaseDates | undefined,
+  contentRatings: TmdbContentRatings | undefined,
+): string | null {
+  if (mediaType === "movie") {
+    const gb = releaseDates?.results?.find((r) => r.iso_3166_1 === "GB");
+    const cert = gb?.release_dates.map((d) => d.certification).find((c) => c);
+    return cert || null;
+  }
+  const gb = contentRatings?.results?.find((r) => r.iso_3166_1 === "GB");
+  return gb?.rating || null;
+}
+
 export async function getMovieDetails(tmdbId: number, mediaType: TmdbMediaType): Promise<TmdbMovieDetails> {
   const url = new URL(`${TMDB_BASE}/${mediaType}/${tmdbId}`);
   url.searchParams.set("api_key", apiKey());
-  // Pull trailers in the same request rather than a second round-trip.
-  url.searchParams.set("append_to_response", "videos");
+  // Pull trailers and certification in the same request rather than extra
+  // round-trips — the certification field differs by media type (movies:
+  // release_dates, tv: content_ratings), so both are requested and only
+  // the relevant one is populated in the response.
+  url.searchParams.set("append_to_response", "videos,release_dates,content_ratings");
 
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error(`TMDB ${mediaType} lookup failed: ${res.status}`);
@@ -138,5 +167,6 @@ export async function getMovieDetails(tmdbId: number, mediaType: TmdbMediaType):
       ? data.genres.map((g: { name: string }) => g.name).filter(Boolean)
       : [],
     trailerKey: pickTrailerKey(data.videos?.results),
+    ageRating: pickAgeRating(mediaType, data.release_dates, data.content_ratings),
   };
 }

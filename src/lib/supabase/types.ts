@@ -97,6 +97,7 @@ export interface Database {
           media_type: "movie" | "tv";
           genres: string[];
           trailer_key: string | null;
+          age_rating: string | null;
         };
         Insert: {
           id?: string;
@@ -116,6 +117,7 @@ export interface Database {
           media_type?: "movie" | "tv";
           genres?: string[];
           trailer_key?: string | null;
+          age_rating?: string | null;
         };
         Update: {
           title?: string;
@@ -131,6 +133,7 @@ export interface Database {
           media_type?: "movie" | "tv";
           genres?: string[];
           trailer_key?: string | null;
+          age_rating?: string | null;
         };
         Relationships: [];
       };

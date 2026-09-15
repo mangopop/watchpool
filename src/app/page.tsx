@@ -99,6 +99,7 @@ export default async function Home() {
     tmdbRating: m.tmdb_rating ?? null,
     genres: m.genres ?? [],
     trailerKey: m.trailer_key ?? null,
+    ageRating: m.age_rating ?? null,
     reactions: Object.fromEntries(
       (reactionRows ?? [])
         .filter((r) => r.movie_id === m.id)

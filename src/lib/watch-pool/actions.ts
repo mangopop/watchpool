@@ -58,6 +58,7 @@ export async function addMovieAction(
       tmdb_rating: details?.voteAverage ?? null,
       genres: details?.genres ?? [],
       trailer_key: details?.trailerKey ?? null,
+      age_rating: details?.ageRating ?? null,
       // A manual entry with no TMDB match can't be identified — defaults to
       // "movie" the same way it always has.
       media_type: details ? mediaType : "movie",
@@ -74,28 +75,28 @@ export async function addMovieAction(
   return { ...data, providers };
 }
 
-// One-time catch-up for movies added before trailers/genres were fetched
-// (those columns didn't exist yet, so tmdb_id is set but trailer_key is
-// null and/or genres is empty). Capped per call — run from the client on
-// load, group by group, rather than a bulk migration script that'd need a
-// service-role key.
+// One-time catch-up for movies added before trailers/genres/age rating were
+// fetched (those columns didn't exist yet, so tmdb_id is set but trailer_key
+// is null and/or genres is empty and/or age_rating is null). Capped per call
+// — run from the client on load, group by group, rather than a bulk
+// migration script that'd need a service-role key.
 const BACKFILL_LIMIT = 8;
 
 export async function backfillTrailersAction(
   groupId: string,
-): Promise<{ id: string; trailerKey: string | null; genres: string[] | null }[]> {
+): Promise<{ id: string; trailerKey: string | null; genres: string[] | null; ageRating: string | null }[]> {
   const { supabase } = await requireUser();
 
   const { data: candidates, error } = await supabase
     .from("movies")
-    .select("id, tmdb_id, media_type, trailer_key, genres")
+    .select("id, tmdb_id, media_type, trailer_key, genres, age_rating")
     .eq("group_id", groupId)
     .not("tmdb_id", "is", null)
     .limit(200);
   if (error) throw new Error(error.message);
 
   const stale = (candidates ?? [])
-    .filter((c) => c.trailer_key === null || c.genres.length === 0)
+    .filter((c) => c.trailer_key === null || c.genres.length === 0 || c.age_rating === null)
     .slice(0, BACKFILL_LIMIT);
   if (stale.length === 0) return [];
 
@@ -107,16 +108,21 @@ export async function backfillTrailersAction(
         // Don't clobber a value that's already there with a fetch failure.
         trailerKey: details ? details.trailerKey : c.trailer_key,
         genres: details && details.genres.length > 0 ? details.genres : c.genres.length > 0 ? c.genres : null,
+        ageRating: details ? details.ageRating : c.age_rating,
       };
     }),
   );
 
-  const found = results.filter((r) => r.trailerKey !== null || r.genres !== null);
+  const found = results.filter((r) => r.trailerKey !== null || r.genres !== null || r.ageRating !== null);
   await Promise.all(
     found.map((r) =>
       supabase
         .from("movies")
-        .update({ trailer_key: r.trailerKey, ...(r.genres !== null ? { genres: r.genres } : {}) })
+        .update({
+          trailer_key: r.trailerKey,
+          ...(r.genres !== null ? { genres: r.genres } : {}),
+          age_rating: r.ageRating,
+        })
         .eq("id", r.id),
     ),
   );

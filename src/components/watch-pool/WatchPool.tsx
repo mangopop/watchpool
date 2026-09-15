@@ -98,11 +98,26 @@ export function WatchPool({
     });
   }
 
-  // Movies added before trailer/genre fetching existed are missing those
-  // fields — catch them up in the background, a few at a time, per load.
-  // Self-limiting: once every movie has both, the action finds nothing
-  // stale and this becomes a no-op query, so it's safe to leave running
-  // rather than pulling it out once the backlog clears.
+  // Same per-device pattern as hideTmdbRating, but opt-in — off by default.
+  const [showAgeRating, setShowAgeRating] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setShowAgeRating(localStorage.getItem("watch-pool:show-age-rating") === "1");
+  }, []);
+  function toggleShowAgeRating() {
+    setShowAgeRating((prev) => {
+      const next = !prev;
+      localStorage.setItem("watch-pool:show-age-rating", next ? "1" : "0");
+      return next;
+    });
+  }
+
+  // Movies added before trailer/genre/age-rating fetching existed are
+  // missing those fields — catch them up in the background, a few at a
+  // time, per load. Self-limiting: once every movie has them all, the
+  // action finds nothing stale and this becomes a no-op query, so it's
+  // safe to leave running rather than pulling it out once the backlog
+  // clears.
   useEffect(() => {
     backfillTrailersAction(groupId)
       .then((results) => {
@@ -111,7 +126,12 @@ export function WatchPool({
           s.map((m) => {
             const hit = results.find((r) => r.id === m.id);
             if (!hit) return m;
-            return { ...m, trailerKey: hit.trailerKey, genres: hit.genres ?? m.genres };
+            return {
+              ...m,
+              trailerKey: hit.trailerKey,
+              genres: hit.genres ?? m.genres,
+              ageRating: hit.ageRating,
+            };
           }),
         );
       })
@@ -240,6 +260,7 @@ export function WatchPool({
           tmdbRating: row.tmdb_rating ?? null,
           genres: row.genres ?? [],
           trailerKey: row.trailer_key ?? null,
+          ageRating: row.age_rating ?? null,
         },
         ...s,
       ]);
@@ -544,6 +565,7 @@ export function WatchPool({
                 state={state}
                 movie={m}
                 hideTmdbRating={hideTmdbRating}
+                showAgeRating={showAgeRating}
                 onSetStatus={setStatus}
                 onSetRating={setRating}
                 onSetNote={setNote}
@@ -566,6 +588,8 @@ export function WatchPool({
         onToggleService={toggleService}
         hideTmdbRating={hideTmdbRating}
         onToggleHideTmdbRating={toggleHideTmdbRating}
+        showAgeRating={showAgeRating}
+        onToggleShowAgeRating={toggleShowAgeRating}
         displayName={displayName}
         onSaveDisplayName={saveDisplayName}
         nameError={nameError}

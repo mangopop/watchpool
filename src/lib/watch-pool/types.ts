@@ -44,6 +44,8 @@ export interface Movie {
   tmdbRating: number | null;
   genres: string[];
   trailerKey: string | null;
+  // GB certification (e.g. "12A", "15") — see tmdb.ts.
+  ageRating: string | null;
 }
 
 export interface Tonight {

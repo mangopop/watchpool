@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { REACTIONS, TIER_ICON } from "@/lib/watch-pool/constants";
 import { TMDB_POSTER_BASE } from "@/lib/tmdb-shared";
 import {
+  ageRatingClass,
   daysAgoLabel,
   friendName,
   initials,
@@ -21,6 +22,7 @@ interface MovieCardProps {
   state: PoolState;
   movie: Movie;
   hideTmdbRating: boolean;
+  showAgeRating: boolean;
   onSetStatus: (movieId: string, status: ReactionStatus) => void;
   onSetRating: (movieId: string, rating: ReactionTier) => void;
   onSetNote: (movieId: string, note: string) => void;
@@ -35,6 +37,7 @@ export function MovieCard({
   state,
   movie,
   hideTmdbRating,
+  showAgeRating,
   onSetStatus,
   onSetRating,
   onSetNote,
@@ -227,6 +230,14 @@ export function MovieCard({
               <span className="rating" title="TMDB rating">
                 {" "}
                 ★ {movie.tmdbRating.toFixed(1)}
+              </span>
+            )}
+            {showAgeRating && movie.ageRating && (
+              <span
+                className={`age-rating age-rating-${ageRatingClass(movie.ageRating)}`}
+                title="Age rating"
+              >
+                {movie.ageRating}
               </span>
             )}
             {movie.runtime !== null && <span className="runtime"> · {runtimeLabel(movie.runtime)}</span>}

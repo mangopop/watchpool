@@ -702,13 +702,46 @@
   opacity: 0.6;
   font-size: 0.55em;
 }
+.watch-pool .card h3 .age-rating {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6em;
+  margin-left: 6px;
+  padding: 0.22em 0.38em;
+  border-radius: 4px;
+  font-weight: 700;
+  text-transform: none;
+  font-size: 0.42em;
+  line-height: 1;
+  vertical-align: 1.5px;
+  color: #fff;
+  background: #6b6f76;
+}
+/* BBFC's own colour coding — see ageRatingClass in logic.ts. */
+.watch-pool .card h3 .age-rating-u {
+  background: #2e8b3d;
+}
+.watch-pool .card h3 .age-rating-pg {
+  background: #d9a915;
+  color: #1c1a12;
+}
+.watch-pool .card h3 .age-rating-twelve {
+  background: #1f7fd1;
+}
+.watch-pool .card h3 .age-rating-fifteen {
+  background: #e2661c;
+}
+.watch-pool .card h3 .age-rating-eighteen {
+  background: #c62828;
+}
 .watch-pool .card h3 {
   font-family: var(--font-big-shoulders-display), sans-serif;
   font-weight: 800;
   text-transform: uppercase;
   font-size: 25px;
   line-height: 1;
-  margin: 2px 0 5px;
+  margin: 2px 0 7px;
   letter-spacing: 0.01em;
   overflow-wrap: break-word;
 }

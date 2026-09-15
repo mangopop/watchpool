@@ -43,6 +43,27 @@ export function runtimeLabel(mins: number | null): string {
   return `${Math.floor(mins / 60)}h${String(mins % 60).padStart(2, "0")}`;
 }
 
+// BBFC's own colour coding (green/yellow/blue/red/black) — recognisable at a
+// glance to anyone in the UK, so the badge borrows it rather than inventing
+// a new scheme. "12A" and "12" share a colour; anything else (TV content
+// ratings TMDB doesn't map cleanly, e.g. "R18") falls back to neutral.
+export function ageRatingClass(rating: string): string {
+  switch (rating.toUpperCase().replace(/A$/, "")) {
+    case "U":
+      return "u";
+    case "PG":
+      return "pg";
+    case "12":
+      return "twelve";
+    case "15":
+      return "fifteen";
+    case "18":
+      return "eighteen";
+    default:
+      return "other";
+  }
+}
+
 export function daysSince(iso: string): number {
   // Calendar-day difference (local time), not a rolling 24h window — a pick
   // added at 11pm yesterday should read "yesterday" a minute after midnight,

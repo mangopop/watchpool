@@ -14,6 +14,8 @@ interface SettingsDialogProps {
   onToggleService: (serviceId: string) => void;
   hideTmdbRating: boolean;
   onToggleHideTmdbRating: () => void;
+  showAgeRating: boolean;
+  onToggleShowAgeRating: () => void;
   displayName: string;
   onSaveDisplayName: (name: string) => void | Promise<void>;
   nameError: string | null;
@@ -21,7 +23,17 @@ interface SettingsDialogProps {
 
 export const SettingsDialog = forwardRef<SettingsDialogHandle, SettingsDialogProps>(
   function SettingsDialog(
-    { state, onToggleService, hideTmdbRating, onToggleHideTmdbRating, displayName, onSaveDisplayName, nameError },
+    {
+      state,
+      onToggleService,
+      hideTmdbRating,
+      onToggleHideTmdbRating,
+      showAgeRating,
+      onToggleShowAgeRating,
+      displayName,
+      onSaveDisplayName,
+      nameError,
+    },
     ref,
   ) {
     const dialogRef = useRef<HTMLDialogElement>(null);
@@ -94,9 +106,18 @@ export const SettingsDialog = forwardRef<SettingsDialogHandle, SettingsDialogPro
               >
                 Hide TMDB score
               </button>
+              <button
+                type="button"
+                className="toggle"
+                aria-pressed={showAgeRating}
+                onClick={onToggleShowAgeRating}
+              >
+                Show age rating
+              </button>
             </div>
             <p className="hint">
-              Just this device — TMDB&rsquo;s own rating often reads very different from IMDb/RT
+              Just this device — TMDB&rsquo;s own rating often reads very different from IMDb/RT, and age
+              rating is off by default
             </p>
           </div>
           <div className="modal-actions">
