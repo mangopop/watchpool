@@ -1580,6 +1580,14 @@
   }
 }
 @media (max-width: 640px) {
+  /* Below this width the slider no longer reliably fits the chips' row, so
+     pin it to its own full-width line instead of letting flex-wrap decide —
+     otherwise dragging the slider changes the value text's width, which
+     changes whether the row still fits, which flips the wrap decision each
+     frame and the slider visibly jumps position mid-drag. */
+  .watch-pool .rating-slider {
+    flex: 1 0 100%;
+  }
   .watch-pool .hot,
   .watch-pool .must-see {
     grid-template-columns: 1fr;
