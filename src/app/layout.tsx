@@ -32,14 +32,14 @@ const ibmPlexMono = IBM_Plex_Mono({
 
 const spectral = Spectral({
   variable: "--font-spectral",
-  weight: ["400", "500"],
+  weight: ["400", "500"],s
   style: ["normal", "italic"],
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
   title: "A Few Good Films",
-  description: "Recommend movies to your friends, with a reason why.",
+  description: "Recommend movies to your friends.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
